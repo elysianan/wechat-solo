@@ -9,6 +9,23 @@ export const seedMe: Me = {
   signature: '保持热爱，奔赴山海',
 };
 
+const BASE_TIME = Date.now();
+
+const idCounters: Record<string, number> = {};
+function makeId(prefix: string): string {
+  const next = (idCounters[prefix] ?? 0) + 1;
+  idCounters[prefix] = next;
+  return `${prefix}-${next}`;
+}
+
+const contactOnlineMap: Record<string, boolean> = {
+  mom: true,
+  boss: false,
+  buddy: true,
+  lisa: false,
+  landlord: false,
+};
+
 export const seedPersonas: AgentPersona[] = [
   {
     id: 'mom',
@@ -240,14 +257,25 @@ export const seedContacts: Contact[] = seedPersonas.map((persona) => ({
   signature: persona.signature,
   tags: persona.tags,
   persona,
-  isOnline: Math.random() > 0.5,
+  isOnline: contactOnlineMap[persona.id] ?? false,
 }));
 
-function generateId(prefix: string): string {
-  return `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
+function assignLastMessageIds(conversations: Conversation[], messages: Message[]): void {
+  const messagesByConversation = new Map<string, Message[]>();
+  for (const message of messages) {
+    const list = messagesByConversation.get(message.conversationId) ?? [];
+    list.push(message);
+    messagesByConversation.set(message.conversationId, list);
+  }
+
+  for (const conversation of conversations) {
+    const list = messagesByConversation.get(conversation.id) ?? [];
+    list.sort((a, b) => a.createdAt - b.createdAt);
+    conversation.lastMessageId = list[list.length - 1]?.id ?? '';
+  }
 }
 
-export const seedConversations: Conversation[] = seedContacts.map((contact) => ({
+export const seedConversations: Conversation[] = seedContacts.map((contact, index) => ({
   id: `conv-${contact.id}`,
   type: 'single',
   contactId: contact.id,
@@ -255,15 +283,15 @@ export const seedConversations: Conversation[] = seedContacts.map((contact) => (
   unreadCount: contact.id === 'boss' ? 1 : 0,
   isPinned: contact.id === 'mom',
   isMuted: false,
-  updatedAt: Date.now() - Math.floor(Math.random() * 7 * 24 * 60 * 60 * 1000),
+  updatedAt: BASE_TIME - index * 60 * 60 * 1000,
 }));
 
 export const seedMessages: Message[] = seedContacts.flatMap((contact) => {
   const conversationId = `conv-${contact.id}`;
-  const now = Date.now();
+  const now = BASE_TIME;
   const baseMessages: Message[] = [
     {
-      id: generateId('msg'),
+      id: makeId('msg'),
       conversationId,
       senderId: contact.id,
       type: 'text',
@@ -274,13 +302,13 @@ export const seedMessages: Message[] = seedContacts.flatMap((contact) => {
         : contact.id === 'buddy'
         ? '晚上开黑吗？'
         : contact.id === 'lisa'
-        ? '今天 lunch 一起吗？'
+        ? '今天午饭一起吃吗？'
         : '这个月房租记得按时转。',
       status: 'read',
       createdAt: now - 1000 * 60 * 60 * 2,
     },
     {
-      id: generateId('msg'),
+      id: makeId('msg'),
       conversationId,
       senderId: 'me',
       type: 'text',
@@ -290,41 +318,39 @@ export const seedMessages: Message[] = seedContacts.flatMap((contact) => {
     },
   ];
 
-  // 更新会话的最后一条消息 ID
-  const conversation = seedConversations.find((c) => c.id === conversationId)!;
-  conversation.lastMessageId = baseMessages[baseMessages.length - 1].id;
-
   return baseMessages;
 });
 
+assignLastMessageIds(seedConversations, seedMessages);
+
 export const seedMoments: Moment[] = [
   {
-    id: generateId('moment'),
+    id: makeId('moment'),
     authorId: 'mom',
     content: '今天的阳光真好，适合晒被子。☀️',
     images: [],
-    createdAt: Date.now() - 1000 * 60 * 60 * 5,
-    likes: [{ contactId: 'lisa', createdAt: Date.now() - 1000 * 60 * 30 }],
+    createdAt: BASE_TIME - 1000 * 60 * 60 * 5,
+    likes: [{ contactId: 'lisa', createdAt: BASE_TIME - 1000 * 60 * 30 }],
     comments: [],
   },
   {
-    id: generateId('moment'),
+    id: makeId('moment'),
     authorId: 'buddy',
     content: '又双叒叕加班了，资本家看了都流泪。',
     images: [],
-    createdAt: Date.now() - 1000 * 60 * 60 * 8,
-    likes: [{ contactId: 'lisa', createdAt: Date.now() - 1000 * 60 * 45 }],
+    createdAt: BASE_TIME - 1000 * 60 * 60 * 8,
+    likes: [{ contactId: 'lisa', createdAt: BASE_TIME - 1000 * 60 * 45 }],
     comments: [
-      { id: generateId('comment'), contactId: 'mom', content: '年轻人要注意身体', createdAt: Date.now() - 1000 * 60 * 30 },
+      { id: makeId('comment'), contactId: 'mom', content: '年轻人要注意身体', createdAt: BASE_TIME - 1000 * 60 * 30 },
     ],
   },
   {
-    id: generateId('moment'),
+    id: makeId('moment'),
     authorId: 'lisa',
     content: '周末看了部电影，还不错~ 🎬',
     images: [],
-    createdAt: Date.now() - 1000 * 60 * 60 * 24,
-    likes: [{ contactId: 'buddy', createdAt: Date.now() - 1000 * 60 * 60 * 20 }],
+    createdAt: BASE_TIME - 1000 * 60 * 60 * 24,
+    likes: [{ contactId: 'buddy', createdAt: BASE_TIME - 1000 * 60 * 60 * 20 }],
     comments: [],
   },
 ];

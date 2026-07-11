@@ -26,4 +26,33 @@ describe('seed data', () => {
     expect(seedMoments.length).toBeGreaterThan(0);
     expect(seedMoments.every((m) => contactIds.has(m.authorId))).toBe(true);
   });
+
+  it('each contact persona has non-empty rules', () => {
+    for (const contact of seedContacts) {
+      expect(contact.persona).toBeDefined();
+      expect(contact.persona.rules.length).toBeGreaterThan(0);
+      for (const rule of contact.persona.rules) {
+        expect(rule.responses.length).toBeGreaterThan(0);
+      }
+    }
+  });
+
+  it('each conversation lastMessageId points to an existing message', () => {
+    const messageIds = new Set(seedMessages.map((m) => m.id));
+    for (const conversation of seedConversations) {
+      expect(messageIds.has(conversation.lastMessageId)).toBe(true);
+    }
+  });
+
+  it('moments likes and comments authors exist in contacts', () => {
+    const contactIds = new Set(seedContacts.map((c) => c.id));
+    for (const moment of seedMoments) {
+      for (const like of moment.likes) {
+        expect(contactIds.has(like.contactId)).toBe(true);
+      }
+      for (const comment of moment.comments) {
+        expect(contactIds.has(comment.contactId)).toBe(true);
+      }
+    }
+  });
 });
