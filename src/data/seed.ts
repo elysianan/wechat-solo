@@ -3,7 +3,7 @@ import type { Me, Contact, Conversation, Message, Moment, AgentPersona } from '.
 export const seedMe: Me = {
   id: 'me',
   nickname: '我',
-  avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=me',
+  avatar: '/avatar-me.svg',
   wechatId: 'wxid_me_2026',
   region: '中国 上海',
   signature: '保持热爱，奔赴山海',
@@ -30,7 +30,7 @@ export const seedPersonas: AgentPersona[] = [
   {
     id: 'mom',
     name: '王阿姨',
-    avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=mom',
+    avatar: '/avatar-mom.svg',
     wechatId: 'wxid_wangayi',
     region: '中国 杭州',
     signature: '家和万事兴',
@@ -78,7 +78,7 @@ export const seedPersonas: AgentPersona[] = [
   {
     id: 'boss',
     name: '张总',
-    avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=boss',
+    avatar: '/avatar-boss.svg',
     wechatId: 'wxid_bosszhang',
     region: '中国 北京',
     signature: '高效执行',
@@ -117,7 +117,7 @@ export const seedPersonas: AgentPersona[] = [
   {
     id: 'buddy',
     name: '阿杰',
-    avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=buddy',
+    avatar: '/avatar-buddy.svg',
     wechatId: 'wxid_ajie',
     region: '中国 上海',
     signature: '及时行乐',
@@ -165,7 +165,7 @@ export const seedPersonas: AgentPersona[] = [
   {
     id: 'lisa',
     name: 'Lisa',
-    avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=lisa',
+    avatar: '/avatar-lisa.svg',
     wechatId: 'wxid_lisa',
     region: '中国 上海',
     signature: '慢慢来',
@@ -212,7 +212,7 @@ export const seedPersonas: AgentPersona[] = [
   {
     id: 'landlord',
     name: '刘房东',
-    avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=landlord',
+    avatar: '/avatar-landlord.svg',
     wechatId: 'wxid_landlord',
     region: '中国 上海',
     signature: '诚信为本',
