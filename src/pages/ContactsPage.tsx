@@ -59,6 +59,14 @@ export function ContactsPage() {
   useEffect(() => {
     if (searchKeyword) return;
 
+    // 清理已卸载分组的过期引用，避免搜索切换后观察到失效元素
+    const validLetters = new Set(letters);
+    for (const letter of Object.keys(sectionRefs.current)) {
+      if (!validLetters.has(letter)) {
+        delete sectionRefs.current[letter];
+      }
+    }
+
     const letterByEl = new Map<Element, string>();
     const observer = new IntersectionObserver(
       (entries) => {
@@ -81,7 +89,7 @@ export function ContactsPage() {
     });
 
     return () => observer.disconnect();
-  }, [grouped, searchKeyword]);
+  }, [grouped, searchKeyword, letters]);
 
   // 点击字母索引时滚动到对应分组
   const handleLetterClick = (letter: string) => {
