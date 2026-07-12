@@ -64,7 +64,7 @@ export function generateReply(input: GenerateReplyInput): ReplyPlan {
   // 计算时间线
   const baseDelay = randomBetween(behavior.replyDelayMin, behavior.replyDelayMax) * timeScale;
   const showTyping = Math.random() < behavior.typingIndicatorChance;
-  const readDelay = baseDelay * randomBetween(0.3, 0.5);
+  const readDelay = baseDelay * randomBetween(0.4, 0.5);
   const typingDuration = showTyping ? (baseDelay - readDelay) * randomBetween(0.4, 0.9) : 0;
 
   // 所有我发送的消息都视为会被对方 read

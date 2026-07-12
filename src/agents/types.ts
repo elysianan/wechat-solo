@@ -13,7 +13,7 @@ export interface GenerateReplyInput {
   userMessage: Message;
   recentMessages: Message[];
   options?: {
-    timeScale?: number; // 默认 1；测试传 0
+    timeScale?: number; // 默认 1；0 表示立即响应
   };
 }
 

@@ -33,36 +33,39 @@ function scheduleStatusFlow(userMessage: Message, plan: ReplyPlan) {
 
   // sent
   setTimeout(() => {
-    useChatStore.getState().updateMessageStatus(userMessage.id, 'sent');
+    useChatStore.getState().updateMessageStatus(userMessage.id, 'sent').catch((err) => {
+      console.error('消息状态更新失败:', err);
+    });
   }, sentAt);
 
   // delivered
   setTimeout(() => {
-    useChatStore.getState().updateMessageStatus(userMessage.id, 'delivered');
+    useChatStore.getState().updateMessageStatus(userMessage.id, 'delivered').catch((err) => {
+      console.error('消息状态更新失败:', err);
+    });
   }, deliveredAt);
 
   // read + 回复：先标记已读，再展示"正在输入"，最后写入回复
   setTimeout(() => {
     readUserMessageIds.forEach((id) => {
-      useChatStore.getState().updateMessageStatus(id, 'read');
+      useChatStore.getState().updateMessageStatus(id, 'read').catch((err) => {
+        console.error('消息状态更新失败:', err);
+      });
     });
 
-    const shouldShowTyping = replyMessages.length > 0 || typingDurationMs > 0;
-    if (!shouldShowTyping) {
+    const shouldShowTyping = typingDurationMs > 0;
+    if (shouldShowTyping) {
       useChatStore.setState((state) => ({
-        typingConversations: { ...state.typingConversations, [conversationId]: false },
+        typingConversations: { ...state.typingConversations, [conversationId]: true },
       }));
-      return;
     }
 
-    useChatStore.setState((state) => ({
-      typingConversations: { ...state.typingConversations, [conversationId]: true },
-    }));
-
     setTimeout(() => {
-      receiveAgentReply(plan).catch((err) => {
-        console.error('Agent 回复写入失败:', err);
-      });
+      if (replyMessages.length > 0) {
+        receiveAgentReply(plan).catch((err) => {
+          console.error('Agent 回复写入失败:', err);
+        });
+      }
       useChatStore.setState((state) => ({
         typingConversations: { ...state.typingConversations, [conversationId]: false },
       }));
@@ -203,22 +206,27 @@ export const useChatStore = create<ChatState>((set) => ({
     });
 
     // 为当前会话生成 Agent 回复计划
-    const conversation = await db.conversations.get(conversationId);
-    const contact = conversation?.contactId
-      ? await db.contacts.get(conversation.contactId)
-      : undefined;
-    if (!contact) return;
+    try {
+      const conversation = await db.conversations.get(conversationId);
+      const contact = conversation?.contactId
+        ? await db.contacts.get(conversation.contactId)
+        : undefined;
+      if (!contact) return;
 
-    const timeScale = useChatStore.getState().replyTimeScale;
-    const recentMessages = useChatStore.getState().messages[conversationId] || [];
-    const plan = generateReply({
-      contact,
-      userMessage: message,
-      recentMessages,
-      options: { timeScale },
-    });
+      const timeScale = useChatStore.getState().replyTimeScale;
+      const recentMessages = useChatStore.getState().messages[conversationId] || [];
+      const plan = generateReply({
+        contact,
+        userMessage: message,
+        recentMessages,
+        options: { timeScale },
+      });
 
-    scheduleStatusFlow(message, plan);
+      scheduleStatusFlow(message, plan);
+    } catch (error) {
+      console.error('Agent 回复调度失败:', error);
+      await useChatStore.getState().updateMessageStatus(message.id, 'failed');
+    }
   },
 
   markConversationRead: async (conversationId) => {
