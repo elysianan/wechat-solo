@@ -347,4 +347,23 @@ export const seedMoments: Moment[] = [
     likes: [{ contactId: 'buddy', createdAt: BASE_TIME - 1000 * 60 * 60 * 20 }],
     comments: [],
   },
+  // 追加带图片占位的朋友圈动态
+  {
+    id: makeId('moment'),
+    authorId: 'mom',
+    content: '周末晒晒被子，舒服。☀️',
+    images: ['placeholder', 'placeholder'],
+    createdAt: BASE_TIME - 1000 * 60 * 60 * 12,
+    likes: [],
+    comments: [],
+  },
+  {
+    id: makeId('moment'),
+    authorId: 'boss',
+    content: '团队本周目标明确，高效执行。',
+    images: ['placeholder'],
+    createdAt: BASE_TIME - 1000 * 60 * 60 * 36,
+    likes: [{ contactId: 'lisa', createdAt: BASE_TIME - 1000 * 60 * 60 * 30 }],
+    comments: [],
+  },
 ];
