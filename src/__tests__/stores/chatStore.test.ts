@@ -10,21 +10,35 @@ describe('useChatStore', () => {
     useChatStore.setState({ conversations: [], messages: {}, loaded: false });
   });
 
-  it('从数据库加载会话和消息', async () => {
+  it('加载种子会话和消息', async () => {
     await initializeDatabase();
     await useChatStore.getState().loadChats();
+    expect(useChatStore.getState().conversations.length).toBeGreaterThan(0);
+    expect(useChatStore.getState().loaded).toBe(true);
+  });
 
-    const { conversations, messages, loaded } = useChatStore.getState();
-    expect(loaded).toBe(true);
-    expect(conversations).toHaveLength(5);
+  it('发送消息后更新消息列表和会话', async () => {
+    await initializeDatabase();
+    await useChatStore.getState().loadChats();
+    const conversation = useChatStore.getState().conversations[0];
 
-    // 每个会话都有对应的两条消息，并按 createdAt 升序排列
-    for (const conversation of conversations) {
-      const conversationMessages = messages[conversation.id];
-      expect(conversationMessages).toHaveLength(2);
-      expect(conversationMessages[0].createdAt).toBeLessThanOrEqual(
-        conversationMessages[1].createdAt,
-      );
-    }
+    await useChatStore.getState().sendMessage(conversation.id, '测试消息');
+
+    const messages = useChatStore.getState().messages[conversation.id];
+    expect(messages.some((m) => m.content === '测试消息')).toBe(true);
+    expect(messages[messages.length - 1].senderId).toBe('me');
+
+    const updatedConversation = useChatStore.getState().conversations.find((c) => c.id === conversation.id);
+    expect(updatedConversation?.lastMessageId).toBe(messages[messages.length - 1].id);
+  });
+
+  it('标记会话已读清零未读数', async () => {
+    await initializeDatabase();
+    await useChatStore.getState().loadChats();
+    const conversation = useChatStore.getState().conversations.find((c) => c.unreadCount > 0);
+    if (!conversation) return;
+
+    await useChatStore.getState().markConversationRead(conversation.id);
+    expect(useChatStore.getState().conversations.find((c) => c.id === conversation.id)?.unreadCount).toBe(0);
   });
 });

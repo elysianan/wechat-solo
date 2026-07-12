@@ -7,10 +7,17 @@ interface ChatState {
   messages: Record<string, Message[]>;
   loaded: boolean;
   loadChats: () => Promise<void>;
+  sendMessage: (conversationId: string, content: string) => Promise<void>;
+  markConversationRead: (conversationId: string) => Promise<void>;
 }
 
-// 聊天状态：从 IndexedDB 加载会话及按会话分组的消息
-export const useChatStore = create<ChatState>((set) => ({
+// 生成唯一消息 id
+function makeMessageId(): string {
+  return `msg-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
+}
+
+// 聊天状态：加载会话、按会话分组消息、发送消息、标记已读
+export const useChatStore = create<ChatState>((set, get) => ({
   conversations: [],
   messages: {},
   loaded: false,
@@ -26,5 +33,46 @@ export const useChatStore = create<ChatState>((set) => ({
     }
 
     set({ conversations, messages, loaded: true });
+  },
+  sendMessage: async (conversationId, content) => {
+    const now = Date.now();
+    const message: Message = {
+      id: makeMessageId(),
+      conversationId,
+      senderId: 'me',
+      type: 'text',
+      content,
+      status: 'sent',
+      createdAt: now,
+    };
+
+    await db.messages.add(message);
+    await db.conversations.update(conversationId, {
+      lastMessageId: message.id,
+      updatedAt: now,
+    });
+
+    set((state) => {
+      const conversationMessages = state.messages[conversationId] || [];
+      return {
+        conversations: state.conversations.map((c) =>
+          c.id === conversationId
+            ? { ...c, lastMessageId: message.id, updatedAt: now }
+            : c
+        ),
+        messages: {
+          ...state.messages,
+          [conversationId]: [...conversationMessages, message],
+        },
+      };
+    });
+  },
+  markConversationRead: async (conversationId) => {
+    await db.conversations.update(conversationId, { unreadCount: 0 });
+    set((state) => ({
+      conversations: state.conversations.map((c) =>
+        c.id === conversationId ? { ...c, unreadCount: 0 } : c
+      ),
+    }));
   },
 }));
