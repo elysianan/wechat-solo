@@ -44,4 +44,16 @@ describe('ChatDetailPage', () => {
       expect(screen.getAllByTestId('message-content').some((el) => el.textContent === '新消息')).toBe(true);
     });
   });
+
+  it('当 typingConversations 为 true 时显示正在输入提示', async () => {
+    const conversation = useChatStore.getState().conversations[0];
+    useAppStore.setState({ currentConversationId: conversation.id });
+    useChatStore.setState({
+      typingConversations: { [conversation.id]: true },
+    });
+    render(<ChatDetailPage />);
+    await waitFor(() => {
+      expect(screen.getByTestId('typing-indicator')).toBeInTheDocument();
+    });
+  });
 });

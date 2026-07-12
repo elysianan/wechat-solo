@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react';
 import { Header } from '../components/common/Header';
 import { MessageBubble } from '../components/chat/MessageBubble';
 import { MessageInput } from '../components/chat/MessageInput';
+import { TypingIndicator } from '../components/chat/TypingIndicator';
 import { useAppStore } from '../stores/useAppStore';
 import { useChatStore } from '../stores/useChatStore';
 import { useContactStore } from '../stores/useContactStore';
@@ -15,6 +16,9 @@ export function ChatDetailPage() {
   const navigateBack = useAppStore((state) => state.navigateBackToTabs);
   const messages = useChatStore((state) =>
     conversationId ? state.messages[conversationId] ?? EMPTY_MESSAGES : EMPTY_MESSAGES
+  );
+  const isTyping = useChatStore((state) =>
+    conversationId ? state.typingConversations[conversationId] ?? false : false
   );
   const sendMessage = useChatStore((state) => state.sendMessage);
   const markConversationRead = useChatStore((state) => state.markConversationRead);
@@ -34,7 +38,7 @@ export function ChatDetailPage() {
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
+  }, [messages, isTyping]);
 
   // 未选择会话时不渲染（App.tsx 始终挂载该组件用于转场动画）
   if (!conversationId || !contact) {
@@ -54,6 +58,7 @@ export function ChatDetailPage() {
             contactAvatar={contact.avatar}
           />
         ))}
+        {isTyping && <TypingIndicator avatar={contact.avatar} name={contact.name} />}
         <div ref={bottomRef} />
       </div>
       <MessageInput onSend={(text) => sendMessage(conversationId, text)} />
