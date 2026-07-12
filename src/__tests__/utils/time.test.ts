@@ -22,7 +22,9 @@ describe('formatChatTime', () => {
   });
 
   it('更早显示 MM-DD', () => {
-    const ts = new Date('2026-01-01T10:00:00').getTime();
-    expect(formatChatTime(ts)).toBe('01-01');
+    const older = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+    const ts = new Date(older.getFullYear(), older.getMonth(), older.getDate(), 10, 0).getTime();
+    const expected = `${String(older.getMonth() + 1).padStart(2, '0')}-${String(older.getDate()).padStart(2, '0')}`;
+    expect(formatChatTime(ts)).toBe(expected);
   });
 });

@@ -1,4 +1,8 @@
-// 将时间戳格式化为微信聊天列表样式：当天显示 HH:mm，昨天显示“昨天”，一周内显示星期，更早显示 MM-DD
+/**
+ * 将毫秒级 Unix 时间戳格式化为微信聊天列表样式。
+ * @param timestamp - 毫秒级 Unix 时间戳
+ * @returns 当天显示 HH:mm，昨天显示“昨天”，一周内显示星期，更早显示 MM-DD
+ */
 export function formatChatTime(timestamp: number): string {
   const now = new Date();
   const date = new Date(timestamp);
