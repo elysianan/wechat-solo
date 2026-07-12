@@ -36,6 +36,13 @@ describe('Chat Core Flow', () => {
       contact.persona.behavior.readButNoReplyChance = 0;
     });
 
+    // mom 默认回复池，用于判断 Agent 是否已回复
+    const momDefaultReplies = [
+      '你最近忙不忙',
+      '什么时候回家看看',
+      '妈妈给你转了一篇养生文章',
+    ];
+
     render(<App />);
 
     // 等待聊天列表渲染
@@ -64,7 +71,11 @@ describe('Chat Core Flow', () => {
 
     // 等待 Agent 回复出现（timeScale=0，很快）
     await waitFor(() => {
-      expect(screen.getAllByTestId('message-content').length).toBeGreaterThan(3);
+      const messages = screen.getAllByTestId('message-content');
+      const hasAgentReply = messages.some((el) => {
+        return momDefaultReplies.some((text) => el.textContent?.includes(text));
+      });
+      expect(hasAgentReply).toBe(true);
     });
 
     // 返回列表
@@ -78,6 +89,12 @@ describe('Chat Core Flow', () => {
       el.textContent?.includes('王阿姨')
     );
     expect(momItemAfter).toBeDefined();
-    expect(momItemAfter!.textContent).not.toContain('好的，知道了。');
+
+    const previewAfter = momItemAfter!.textContent;
+    const isUserPreview = previewAfter?.includes('集成测试消息');
+    const isAgentPreview = momDefaultReplies.some((text) =>
+      previewAfter?.includes(text)
+    );
+    expect(isUserPreview || isAgentPreview).toBe(true);
   });
 });
