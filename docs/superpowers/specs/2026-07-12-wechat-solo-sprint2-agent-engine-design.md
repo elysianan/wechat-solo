@@ -99,8 +99,9 @@ interface ReplyPlan {
   conversationId: string;
   contactId: string;
   readUserMessageIds: string[];  // 要标为 read 的用户消息 id
+  readDelayMs: number;           // 从用户发送到把用户消息标为 read 的延迟
   typingDurationMs: number;      // 0 表示不显示"正在输入"
-  replyDelayMs: number;          // 从用户发送开始到回复出现的总延迟
+  replyDelayMs: number;          // 从用户发送到 Agent 回复出现的总延迟
   replyMessages: Array<{
     content: string;
   }>;
@@ -119,8 +120,9 @@ interface ReplyPlan {
 5. **连续多条**：若 `Math.random() < multiMessageChance` 且规则有多条候选，则再随机选一条追加。
 6. **计算延迟**：
    - `baseDelay = random(replyDelayMin, replyDelayMax) × timeScale`
-   - `readDelay = baseDelay × random(0.2, 0.4)`
-   - `typingDuration = showTyping ? (baseDelay - readDelay) × random(0.3, 0.7) : 0`
+   - `showTyping = Math.random() < typingIndicatorChance`
+   - `readDelay = baseDelay × random(0.3, 0.5)`  // 保证 read 在 sent/delivered 之后
+   - `typingDuration = showTyping ? (baseDelay - readDelay) × random(0.4, 0.9) : 0`
    - `replyDelay = baseDelay`
 7. **返回 `ReplyPlan`**。
 
@@ -135,14 +137,18 @@ interface ReplyPlan {
 
 ### 5.1 状态机
 
+状态流转以 Agent 计划中的 `replyDelayMs` 为总时长，按比例分布，避免与较短回复延迟冲突：
+
 ```
 sending
-  ↓ 300ms × timeScale
+  ↓ sentAt = replyDelayMs × 0.15
 sent      (单灰勾)
-  ↓ 400ms × timeScale
+  ↓ deliveredAt = replyDelayMs × 0.30
 delivered (双灰勾)
-  ↓ readDelay
+  ↓ readAt = readDelayMs（readDelayMs ≥ deliveredAt）
 read      (双绿勾)
+  ↓ replyAt = replyDelayMs
+Agent 回复
 ```
 
 ### 5.2 触发条件
@@ -150,15 +156,15 @@ read      (双绿勾)
 | 状态 | 触发条件 |
 |------|----------|
 | `sending` | 用户点击发送，立即写入 DB。 |
-| `sent` | 本地写入成功，模拟"已发送到服务端"。 |
-| `delivered` | 模拟"对方已收到"。 |
-| `read` | Agent 引擎计划中的 `readUserMessageIds` 到达 `readDelay` 时。 |
+| `sent` | 到达 `replyDelayMs × 0.15`，模拟"已发送到服务端"。 |
+| `delivered` | 到达 `replyDelayMs × 0.30`，模拟"对方已收到"。 |
+| `read` | 到达 `readDelayMs`，Agent 把用户消息标为 read。 |
 | `failed` | DB 写入失败或状态更新异常时。 |
 
 ### 5.3 状态更新方式
 
 - `useChatStore` 中的 `updateMessageStatus(messageId, status)` 同时更新 IndexedDB 与 Zustand state。
-- 状态流转使用 `setTimeout` 链式调度；每个 timeout 都用 `timeScale` 缩放。
+- 状态流转使用 `setTimeout` 链式调度；`sent`/`delivered`/`read` 时刻由 `replyDelayMs` 按比例确定。
 
 ---
 
@@ -167,7 +173,7 @@ read      (双绿勾)
 ### 6.1 状态存储
 
 - `useChatStore` 新增：`typingConversations: Record<string, boolean>`。
-- 当 Agent plan 的 `typingDurationMs > 0` 时，在 `readDelay` 时刻设为 `true`。
+- 当 Agent plan 的 `typingDurationMs > 0` 时，在 `readDelayMs` 时刻设为 `true`。
 - 在 Agent 回复插入或 `typingDurationMs` 到期时设为 `false`。
 
 ### 6.2 UI 展示
