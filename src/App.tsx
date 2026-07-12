@@ -23,6 +23,7 @@ function App() {
   const pageStack = useAppStore((state) => state.pageStack);
   const topRoute = pageStack[pageStack.length - 1];
   const isTabLayerActive = topRoute.type === 'tabs';
+  const isDetailActive = topRoute.type !== 'tabs';
   const TabPage = tabPages[currentTab];
 
   const loadContacts = useContactStore((state) => state.loadContacts);
@@ -49,17 +50,17 @@ function App() {
           <TabBar />
         </div>
 
-        {/* 子页面层：栈顶非 tabs 时渲染 */}
-        {topRoute.type !== 'tabs' && (
-          <div
-            className="absolute inset-0 transition-transform duration-300 ease-in-out translate-x-0"
-            data-testid="detail-layer"
-          >
-            {topRoute.type === 'chat-detail' && <ChatDetailPage />}
-            {topRoute.type === 'contact-detail' && <ContactDetailPage />}
-            {topRoute.type === 'moments' && <MomentsPage />}
-          </div>
-        )}
+        {/* 子页面层：始终挂载以支持滑入/滑出动画；通过 translate 类名控制显隐 */}
+        <div
+          className={`absolute inset-0 transition-transform duration-300 ease-in-out ${
+            isDetailActive ? 'translate-x-0' : 'translate-x-full'
+          }`}
+          data-testid="detail-layer"
+        >
+          {topRoute.type === 'chat-detail' && <ChatDetailPage />}
+          {topRoute.type === 'contact-detail' && <ContactDetailPage />}
+          {topRoute.type === 'moments' && <MomentsPage />}
+        </div>
       </div>
     </div>
   );

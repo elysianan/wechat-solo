@@ -195,15 +195,39 @@ function App() {
 export default App;
 ```
 
-- [ ] **Step 3: 验证类型**
+- [ ] **Step 3: 更新 `ChatDetailPage` 以使用页面栈**
+
+`src/pages/ChatDetailPage.tsx` 原依赖 `currentConversationId`，现改为从 `pageStack` 栈顶读取：
+
+```tsx
+const conversationId = useAppStore((state) => {
+  const top = state.pageStack[state.pageStack.length - 1];
+  return top?.type === 'chat-detail' ? top.conversationId : null;
+});
+```
+
+其余逻辑不变。
+
+- [ ] **Step 4: 更新 `useChatStore` 的当前会话判断**
+
+`src/stores/useChatStore.ts` 中 `receiveAgentReply` 原本读取 `currentConversationId`。改为读取 `pageStack` 栈顶：
+
+```typescript
+const topRoute = useAppStore.getState().pageStack.at(-1);
+const isCurrent = topRoute?.type === 'chat-detail' && topRoute.conversationId === conversationId;
+```
+
+删除所有对 `useAppStore.getState().currentConversationId` 的引用。
+
+- [ ] **Step 5: 验证类型**
 
 Run: `npx tsc -b`
 Expected: 无错误（路由测试会在 Task 2 更新）。
 
-- [ ] **Step 4: 提交**
+- [ ] **Step 6: 提交**
 
 ```bash
-git add src/stores/useAppStore.ts src/App.tsx
+git add src/stores/useAppStore.ts src/App.tsx src/pages/ChatDetailPage.tsx src/stores/useChatStore.ts
 git commit -m "feat(routing): 轻量级页面栈，支持 chat-detail/contact-detail/moments"
 ```
 
