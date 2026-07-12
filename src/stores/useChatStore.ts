@@ -17,7 +17,7 @@ function makeMessageId(): string {
 }
 
 // 聊天状态：加载会话、按会话分组消息、发送消息、标记已读
-export const useChatStore = create<ChatState>((set, get) => ({
+export const useChatStore = create<ChatState>((set) => ({
   conversations: [],
   messages: {},
   loaded: false,
