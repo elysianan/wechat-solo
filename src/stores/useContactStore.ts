@@ -18,7 +18,7 @@ function contactMatches(contact: Contact, keyword: string): boolean {
   const lowerKeyword = keyword.toLowerCase();
   const name = contact.name;
 
-  if (name.includes(keyword)) return true;
+  if (name.toLowerCase().includes(lowerKeyword)) return true;
 
   const firstLetters = pinyin(name, { pattern: 'first', toneType: 'none', type: 'string' });
   if (firstLetters.toLowerCase().includes(lowerKeyword)) return true;
@@ -30,7 +30,7 @@ function contactMatches(contact: Contact, keyword: string): boolean {
 }
 
 // 联系人状态：从 IndexedDB 加载当前用户与联系人列表，支持搜索
-export const useContactStore = create<ContactState>((set, get) => ({
+export const useContactStore = create<ContactState>((set) => ({
   me: null,
   contacts: [],
   loaded: false,
