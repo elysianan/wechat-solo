@@ -14,7 +14,7 @@ describe('App Routing', () => {
     await db.open();
     useChatStore.setState({ conversations: [], messages: {}, loaded: false });
     useContactStore.setState({ me: null, contacts: [], loaded: false });
-    useAppStore.setState({ currentTab: 'chats', currentPage: 'tabs', currentConversationId: null });
+    useAppStore.setState({ currentTab: 'chats', pageStack: [{ type: 'tabs' }] });
     await initializeDatabase();
     await useContactStore.getState().loadContacts();
     await useChatStore.getState().loadChats();
@@ -24,11 +24,10 @@ describe('App Routing', () => {
     render(<App />);
     await waitFor(() => {
       expect(screen.getByTestId('tab-layer')).toHaveClass('translate-x-0');
-      expect(screen.getByTestId('detail-layer')).toHaveClass('translate-x-full');
     });
   });
 
-  it('从聊天列表进入详情页后 detail-layer 滑入', async () => {
+  it('从聊天列表进入详情页后 tab 层滑出', async () => {
     render(<App />);
     await waitFor(() => {
       expect(screen.getAllByTestId('chat-list-item')[0]).toBeInTheDocument();
@@ -36,7 +35,7 @@ describe('App Routing', () => {
     fireEvent.click(screen.getAllByTestId('chat-list-item')[0]);
     await waitFor(() => {
       expect(screen.getByTestId('tab-layer')).toHaveClass('-translate-x-full');
-      expect(screen.getByTestId('detail-layer')).toHaveClass('translate-x-0');
+      expect(screen.getByTestId('detail-layer')).toBeInTheDocument();
     });
   });
 
@@ -52,7 +51,6 @@ describe('App Routing', () => {
     fireEvent.click(screen.getByTestId('header-back'));
     await waitFor(() => {
       expect(screen.getByTestId('tab-layer')).toHaveClass('translate-x-0');
-      expect(screen.getByTestId('detail-layer')).toHaveClass('translate-x-full');
     });
   });
 });

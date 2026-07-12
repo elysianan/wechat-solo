@@ -21,8 +21,7 @@ describe('useChatStore agent flow', () => {
     });
     useAppStore.setState({
       currentTab: 'chats',
-      currentPage: 'tabs',
-      currentConversationId: null,
+      pageStack: [{ type: 'tabs' }],
     });
   });
 
@@ -96,7 +95,7 @@ describe('useChatStore agent flow', () => {
 
     await useChatStore.getState().loadChats();
     const conversation = useChatStore.getState().conversations.find((c) => c.contactId === 'mom')!;
-    useAppStore.setState({ currentConversationId: 'other-conv' });
+    useAppStore.setState({ pageStack: [{ type: 'chat-detail', conversationId: 'other-conv' }] });
 
     await useChatStore.getState().sendMessage(conversation.id, '吃了吗');
     await vi.runAllTimersAsync();

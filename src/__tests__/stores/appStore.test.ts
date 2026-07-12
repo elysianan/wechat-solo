@@ -5,14 +5,13 @@ describe('useAppStore', () => {
   beforeEach(() => {
     useAppStore.setState({
       currentTab: 'chats',
-      currentPage: 'tabs',
-      currentConversationId: null,
+      pageStack: [{ type: 'tabs' }],
     });
   });
 
   it('默认在聊天 tab 和 tabs 页面', () => {
     expect(useAppStore.getState().currentTab).toBe('chats');
-    expect(useAppStore.getState().currentPage).toBe('tabs');
+    expect(useAppStore.getState().pageStack.at(-1)?.type).toBe('tabs');
   });
 
   it('可切换 tab', () => {
@@ -22,14 +21,15 @@ describe('useAppStore', () => {
 
   it('可进入聊天详情', () => {
     useAppStore.getState().navigateToChatDetail('conv-mom');
-    expect(useAppStore.getState().currentPage).toBe('chat-detail');
-    expect(useAppStore.getState().currentConversationId).toBe('conv-mom');
+    const topRoute = useAppStore.getState().pageStack.at(-1);
+    expect(topRoute?.type).toBe('chat-detail');
+    expect(topRoute).toHaveProperty('conversationId', 'conv-mom');
   });
 
   it('可从聊天详情返回 tabs', () => {
     useAppStore.getState().navigateToChatDetail('conv-mom');
     useAppStore.getState().navigateBackToTabs();
-    expect(useAppStore.getState().currentPage).toBe('tabs');
-    expect(useAppStore.getState().currentConversationId).toBeNull();
+    expect(useAppStore.getState().pageStack.at(-1)?.type).toBe('tabs');
+    expect(useAppStore.getState().pageStack).toHaveLength(1);
   });
 });
