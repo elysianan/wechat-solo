@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import type { AgentPersona } from '../../agents/types';
+import type { AgentPersona, ReplyPlan } from '../../agents/types';
 
 describe('agents/types re-export', () => {
   it('can import AgentPersona from agents/types', () => {
@@ -29,5 +29,20 @@ describe('agents/types re-export', () => {
       ],
     };
     expect(persona.name).toBe('王阿姨');
+  });
+});
+
+describe('agents/types ReplyPlan', () => {
+  it('accepts a valid ReplyPlan object', () => {
+    const plan: ReplyPlan = {
+      conversationId: 'conv-1',
+      contactId: 'mom',
+      readUserMessageIds: ['msg-1'],
+      readDelayMs: 300,
+      typingDurationMs: 500,
+      replyDelayMs: 1000,
+      replyMessages: [{ content: '吃了吗？' }],
+    };
+    expect(plan.replyMessages[0].content).toBe('吃了吗？');
   });
 });
