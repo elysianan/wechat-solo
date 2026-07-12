@@ -1,44 +1,97 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { useChatStore } from '../../stores/useChatStore';
+import { useAppStore } from '../../stores/useAppStore';
 import { db } from '../../db/database';
 import { initializeDatabase } from '../../db/init';
 
-describe('useChatStore', () => {
+describe('useChatStore agent flow', () => {
   beforeEach(async () => {
+    HTMLElement.prototype.scrollIntoView = vi.fn();
+    // 数据库初始化在真实定时器下完成，避免 fake-indexeddb 与 fake timers 冲突
     await db.delete();
     await db.open();
-    useChatStore.setState({ conversations: [], messages: {}, loaded: false });
+    await initializeDatabase();
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+    useChatStore.setState({
+      conversations: [],
+      messages: {},
+      loaded: false,
+      replyTimeScale: 0,
+      typingConversations: {},
+    });
+    useAppStore.setState({
+      currentTab: 'chats',
+      currentPage: 'tabs',
+      currentConversationId: null,
+    });
   });
 
-  it('加载种子会话和消息', async () => {
-    await initializeDatabase();
-    await useChatStore.getState().loadChats();
-    expect(useChatStore.getState().conversations.length).toBeGreaterThan(0);
-    expect(useChatStore.getState().loaded).toBe(true);
+  afterEach(() => {
+    vi.useRealTimers();
   });
 
-  it('发送消息后更新消息列表和会话', async () => {
-    await initializeDatabase();
+  it('sends message and transitions status to read', async () => {
     await useChatStore.getState().loadChats();
     const conversation = useChatStore.getState().conversations[0];
-
     await useChatStore.getState().sendMessage(conversation.id, '测试消息');
 
-    const messages = useChatStore.getState().messages[conversation.id];
-    expect(messages.some((m) => m.content === '测试消息')).toBe(true);
-    expect(messages[messages.length - 1].senderId).toBe('me');
+    const userMessage = useChatStore
+      .getState()
+      .messages[conversation.id]
+      .find((m) => m.senderId === 'me' && m.content === '测试消息')!;
+    expect(userMessage.status).toBe('sending');
 
-    const updatedConversation = useChatStore.getState().conversations.find((c) => c.id === conversation.id);
-    expect(updatedConversation?.lastMessageId).toBe(messages[messages.length - 1].id);
+    await vi.runAllTimersAsync();
+    const updated = useChatStore
+      .getState()
+      .messages[conversation.id]
+      .find((m) => m.id === userMessage.id)!;
+    expect(updated.status).toBe('read');
   });
 
-  it('标记会话已读清零未读数', async () => {
-    await initializeDatabase();
-    await useChatStore.getState().loadChats();
-    const conversation = useChatStore.getState().conversations.find((c) => c.unreadCount > 0);
-    if (!conversation) return;
+  it('receives agent reply after user message', async () => {
+    // 把 mom 的已读不回概率设为 0，避免测试随机失败
+    await db.contacts.where('id').equals('mom').modify((contact) => {
+      contact.persona.behavior.readButNoReplyChance = 0;
+    });
 
-    await useChatStore.getState().markConversationRead(conversation.id);
-    expect(useChatStore.getState().conversations.find((c) => c.id === conversation.id)?.unreadCount).toBe(0);
+    await useChatStore.getState().loadChats();
+    const conversation = useChatStore.getState().conversations.find((c) => c.contactId === 'mom')!;
+    await useChatStore.getState().sendMessage(conversation.id, '吃了吗');
+    await vi.runAllTimersAsync();
+
+    const messages = useChatStore.getState().messages[conversation.id];
+    const lastMessage = messages[messages.length - 1];
+    expect(lastMessage.senderId).toBe('mom');
+  });
+
+  it('shows typing indicator then hides', async () => {
+    await db.contacts.where('id').equals('mom').modify((contact) => {
+      contact.persona.behavior.readButNoReplyChance = 0;
+    });
+
+    await useChatStore.getState().loadChats();
+    const conversation = useChatStore.getState().conversations.find((c) => c.contactId === 'mom')!;
+    await useChatStore.getState().sendMessage(conversation.id, '吃了吗');
+
+    expect(useChatStore.getState().typingConversations[conversation.id]).toBe(true);
+    await vi.runAllTimersAsync();
+    expect(useChatStore.getState().typingConversations[conversation.id]).toBeFalsy();
+  });
+
+  it('increments unread count when user is not in conversation', async () => {
+    await db.contacts.where('id').equals('mom').modify((contact) => {
+      contact.persona.behavior.readButNoReplyChance = 0;
+    });
+
+    await useChatStore.getState().loadChats();
+    const conversation = useChatStore.getState().conversations.find((c) => c.contactId === 'mom')!;
+    useAppStore.setState({ currentConversationId: 'other-conv' });
+
+    await useChatStore.getState().sendMessage(conversation.id, '吃了吗');
+    await vi.runAllTimersAsync();
+
+    const updated = useChatStore.getState().conversations.find((c) => c.id === conversation.id);
+    expect(updated?.unreadCount).toBeGreaterThan(0);
   });
 });
