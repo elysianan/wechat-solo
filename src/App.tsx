@@ -5,6 +5,9 @@ import { ContactsPage } from './pages/ContactsPage';
 import { DiscoverPage } from './pages/DiscoverPage';
 import { MePage } from './pages/MePage';
 import { useAppStore } from './stores/useAppStore';
+import { useContactStore } from './stores/useContactStore';
+import { useChatStore } from './stores/useChatStore';
+import { useEffect } from 'react';
 
 const tabPages = {
   chats: ChatPage,
@@ -17,6 +20,21 @@ function App() {
   const currentTab = useAppStore((state) => state.currentTab);
   const currentPage = useAppStore((state) => state.currentPage);
   const TabPage = tabPages[currentTab];
+
+  // 应用启动时从 IndexedDB 加载联系人和会话数据
+  const loadContacts = useContactStore((state) => state.loadContacts);
+  const loadChats = useChatStore((state) => state.loadChats);
+  const contactsLoaded = useContactStore((state) => state.loaded);
+  const chatsLoaded = useChatStore((state) => state.loaded);
+
+  useEffect(() => {
+    if (!contactsLoaded) {
+      loadContacts();
+    }
+    if (!chatsLoaded) {
+      loadChats();
+    }
+  }, [contactsLoaded, loadContacts, chatsLoaded, loadChats]);
 
   return (
     <div className="relative w-full h-screen overflow-hidden bg-gray-100">

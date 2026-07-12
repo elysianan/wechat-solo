@@ -11,9 +11,11 @@ import type { Message } from '../types';
 const EMPTY_MESSAGES: Message[] = [];
 
 export function ChatDetailPage() {
-  const conversationId = useAppStore((state) => state.currentConversationId)!;
+  const conversationId = useAppStore((state) => state.currentConversationId);
   const navigateBack = useAppStore((state) => state.navigateBackToTabs);
-  const messages = useChatStore((state) => state.messages[conversationId] ?? EMPTY_MESSAGES);
+  const messages = useChatStore((state) =>
+    conversationId ? state.messages[conversationId] ?? EMPTY_MESSAGES : EMPTY_MESSAGES
+  );
   const sendMessage = useChatStore((state) => state.sendMessage);
   const markConversationRead = useChatStore((state) => state.markConversationRead);
   const conversation = useChatStore((state) =>
@@ -34,12 +36,9 @@ export function ChatDetailPage() {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  if (!contact) {
-    return (
-      <div className="min-h-screen bg-wechat-bg flex items-center justify-center">
-        <span className="text-wechat-text-secondary">会话不存在</span>
-      </div>
-    );
+  // 未选择会话时不渲染（App.tsx 始终挂载该组件用于转场动画）
+  if (!conversationId || !contact) {
+    return null;
   }
 
   return (
