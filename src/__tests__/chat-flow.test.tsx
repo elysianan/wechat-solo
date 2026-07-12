@@ -20,11 +20,7 @@ describe('Chat Core Flow', () => {
       typingConversations: {},
     });
     useContactStore.setState({ me: null, contacts: [], loaded: false });
-    useAppStore.setState({
-      currentTab: 'chats',
-      currentPage: 'tabs',
-      currentConversationId: null,
-    });
+    useAppStore.setState({ currentTab: 'chats', pageStack: [{ type: 'tabs' }] });
     await initializeDatabase();
     await useContactStore.getState().loadContacts();
     await useChatStore.getState().loadChats();

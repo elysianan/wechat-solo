@@ -14,7 +14,7 @@ describe('ChatDetailPage', () => {
     await db.open();
     useChatStore.setState({ conversations: [], messages: {}, loaded: false });
     useContactStore.setState({ me: null, contacts: [], loaded: false });
-    useAppStore.setState({ currentTab: 'chats', currentPage: 'chat-detail', currentConversationId: null });
+    useAppStore.setState({ currentTab: 'chats', pageStack: [{ type: 'tabs' }] });
     await initializeDatabase();
     await useContactStore.getState().loadContacts();
     await useChatStore.getState().loadChats();
@@ -22,7 +22,7 @@ describe('ChatDetailPage', () => {
 
   it('渲染当前会话的消息气泡', async () => {
     const conversation = useChatStore.getState().conversations[0];
-    useAppStore.setState({ currentConversationId: conversation.id });
+    useAppStore.setState({ pageStack: [{ type: 'chat-detail', conversationId: conversation.id }] });
     render(<ChatDetailPage />);
     await waitFor(() => {
       expect(screen.getAllByTestId('message-bubble').length).toBeGreaterThan(0);
@@ -31,7 +31,7 @@ describe('ChatDetailPage', () => {
 
   it('发送消息后列表中出现新消息', async () => {
     const conversation = useChatStore.getState().conversations[0];
-    useAppStore.setState({ currentConversationId: conversation.id });
+    useAppStore.setState({ pageStack: [{ type: 'chat-detail', conversationId: conversation.id }] });
     render(<ChatDetailPage />);
     await waitFor(() => {
       expect(screen.getByTestId('message-input')).toBeInTheDocument();
@@ -47,7 +47,7 @@ describe('ChatDetailPage', () => {
 
   it('当 typingConversations 为 true 时显示正在输入提示', async () => {
     const conversation = useChatStore.getState().conversations[0];
-    useAppStore.setState({ currentConversationId: conversation.id });
+    useAppStore.setState({ pageStack: [{ type: 'chat-detail', conversationId: conversation.id }] });
     useChatStore.setState({
       typingConversations: { [conversation.id]: true },
     });

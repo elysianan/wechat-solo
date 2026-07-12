@@ -4,6 +4,7 @@ import { db } from '../db/database';
 import { generateReply } from '../agents/engine';
 import type { ReplyPlan } from '../agents/types';
 import { useAppStore } from './useAppStore';
+import { makeMessageId } from '../utils/id';
 
 interface ChatState {
   conversations: Conversation[];
@@ -16,11 +17,6 @@ interface ChatState {
   markConversationRead: (conversationId: string) => Promise<void>;
   updateMessageStatus: (messageId: string, status: Message['status']) => Promise<void>;
   setReplyTimeScale: (scale: number) => void;
-}
-
-// 生成唯一消息 id
-function makeMessageId(): string {
-  return `msg-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
 }
 
 // 按 Agent 计划调度状态流转与回复
@@ -90,7 +86,8 @@ async function receiveAgentReply(plan: ReplyPlan) {
   }));
 
   const lastMessage = agentMessages[agentMessages.length - 1];
-  const isCurrent = useAppStore.getState().currentConversationId === conversationId;
+  const topRoute = useAppStore.getState().pageStack.at(-1);
+  const isCurrent = topRoute?.type === 'chat-detail' && topRoute.conversationId === conversationId;
 
   // 将 Agent 消息写入与会话更新放在同一个 Dexie 事务中
   await db.transaction('rw', [db.messages, db.conversations], () => {

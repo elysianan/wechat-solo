@@ -1,4 +1,5 @@
 import type { Me, Contact, Conversation, Message, Moment, AgentPersona } from '../types';
+import { makeId } from '../utils/id';
 
 export const seedMe: Me = {
   id: 'me',
@@ -10,13 +11,6 @@ export const seedMe: Me = {
 };
 
 const BASE_TIME = Date.now();
-
-const idCounters: Record<string, number> = {};
-function makeId(prefix: string): string {
-  const next = (idCounters[prefix] ?? 0) + 1;
-  idCounters[prefix] = next;
-  return `${prefix}-${next}`;
-}
 
 const contactOnlineMap: Record<string, boolean> = {
   mom: true,
@@ -351,6 +345,25 @@ export const seedMoments: Moment[] = [
     images: [],
     createdAt: BASE_TIME - 1000 * 60 * 60 * 24,
     likes: [{ contactId: 'buddy', createdAt: BASE_TIME - 1000 * 60 * 60 * 20 }],
+    comments: [],
+  },
+  // 追加带图片占位的朋友圈动态
+  {
+    id: makeId('moment'),
+    authorId: 'mom',
+    content: '周末晒晒被子，舒服。☀️',
+    images: ['placeholder', 'placeholder'],
+    createdAt: BASE_TIME - 1000 * 60 * 60 * 12,
+    likes: [],
+    comments: [],
+  },
+  {
+    id: makeId('moment'),
+    authorId: 'boss',
+    content: '团队本周目标明确，高效执行。',
+    images: ['placeholder'],
+    createdAt: BASE_TIME - 1000 * 60 * 60 * 36,
+    likes: [{ contactId: 'lisa', createdAt: BASE_TIME - 1000 * 60 * 60 * 30 }],
     comments: [],
   },
 ];

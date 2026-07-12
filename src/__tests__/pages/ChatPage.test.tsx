@@ -13,7 +13,7 @@ describe('ChatPage', () => {
     await db.open();
     useChatStore.setState({ conversations: [], messages: {}, loaded: false });
     useContactStore.setState({ me: null, contacts: [], loaded: false });
-    useAppStore.setState({ currentTab: 'chats', currentPage: 'tabs', currentConversationId: null });
+    useAppStore.setState({ currentTab: 'chats', pageStack: [{ type: 'tabs' }] });
     await initializeDatabase();
     await useContactStore.getState().loadContacts();
     await useChatStore.getState().loadChats();
@@ -32,7 +32,8 @@ describe('ChatPage', () => {
       expect(screen.getAllByTestId('chat-list-item')[0]).toBeInTheDocument();
     });
     fireEvent.click(screen.getAllByTestId('chat-list-item')[0]);
-    expect(useAppStore.getState().currentPage).toBe('chat-detail');
-    expect(useAppStore.getState().currentConversationId).not.toBeNull();
+    const topRoute = useAppStore.getState().pageStack.at(-1);
+    expect(topRoute?.type).toBe('chat-detail');
+    expect(topRoute).toHaveProperty('conversationId');
   });
 });

@@ -12,7 +12,10 @@ import type { Message } from '../types';
 const EMPTY_MESSAGES: Message[] = [];
 
 export function ChatDetailPage() {
-  const conversationId = useAppStore((state) => state.currentConversationId);
+  const conversationId = useAppStore((state) => {
+    const top = state.pageStack[state.pageStack.length - 1];
+    return top?.type === 'chat-detail' ? top.conversationId : null;
+  });
   const navigateBack = useAppStore((state) => state.navigateBackToTabs);
   const messages = useChatStore((state) =>
     conversationId ? state.messages[conversationId] ?? EMPTY_MESSAGES : EMPTY_MESSAGES
