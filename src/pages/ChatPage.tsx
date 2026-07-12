@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 import { Header } from '../components/common/Header';
 import { ChatListItem } from '../components/chat/ChatListItem';
 import { useAppStore } from '../stores/useAppStore';
@@ -20,7 +20,26 @@ export function ChatPage() {
     }
   }, [loaded, loadChats]);
 
-  const sortedConversations = [...conversations].sort((a, b) => b.updatedAt - a.updatedAt);
+  // 置顶会话排在最前，其余按最后更新时间倒序
+  const sortedConversations = useMemo(() => {
+    return [...conversations].sort((a, b) => {
+      if (a.isPinned !== b.isPinned) {
+        return a.isPinned ? -1 : 1;
+      }
+      return b.updatedAt - a.updatedAt;
+    });
+  }, [conversations]);
+
+  // 把已加载消息建成 id → message 映射，避免每条会话都 O(n) 查找最后消息
+  const messageMap = useMemo(() => {
+    const map: Record<string, { content: string }> = {};
+    for (const list of Object.values(messages)) {
+      for (const message of list) {
+        map[message.id] = message;
+      }
+    }
+    return map;
+  }, [messages]);
 
   return (
     <div className="min-h-screen bg-wechat-bg pb-16" data-testid="chat-page">
@@ -28,7 +47,7 @@ export function ChatPage() {
       <div className="divide-y divide-wechat-divider">
         {sortedConversations.map((conversation) => {
           const contact = contacts.find((c) => c.id === conversation.contactId);
-          const lastMessage = messages[conversation.id]?.find((m) => m.id === conversation.lastMessageId);
+          const lastMessage = messageMap[conversation.lastMessageId];
           if (!contact) return null;
 
           return (
