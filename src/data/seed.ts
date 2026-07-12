@@ -1,4 +1,5 @@
 import type { Me, Contact, Conversation, Message, Moment, AgentPersona } from '../types';
+import { makeId } from '../utils/id';
 
 export const seedMe: Me = {
   id: 'me',
@@ -10,13 +11,6 @@ export const seedMe: Me = {
 };
 
 const BASE_TIME = Date.now();
-
-const idCounters: Record<string, number> = {};
-function makeId(prefix: string): string {
-  const next = (idCounters[prefix] ?? 0) + 1;
-  idCounters[prefix] = next;
-  return `${prefix}-${next}`;
-}
 
 const contactOnlineMap: Record<string, boolean> = {
   mom: true,

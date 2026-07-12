@@ -4,6 +4,7 @@ import { db } from '../db/database';
 import { generateReply } from '../agents/engine';
 import type { ReplyPlan } from '../agents/types';
 import { useAppStore } from './useAppStore';
+import { makeMessageId } from '../utils/id';
 
 interface ChatState {
   conversations: Conversation[];
@@ -16,11 +17,6 @@ interface ChatState {
   markConversationRead: (conversationId: string) => Promise<void>;
   updateMessageStatus: (messageId: string, status: Message['status']) => Promise<void>;
   setReplyTimeScale: (scale: number) => void;
-}
-
-// 生成唯一消息 id
-function makeMessageId(): string {
-  return `msg-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
 }
 
 // 按 Agent 计划调度状态流转与回复
