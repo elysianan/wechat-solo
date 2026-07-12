@@ -90,7 +90,8 @@ async function receiveAgentReply(plan: ReplyPlan) {
   }));
 
   const lastMessage = agentMessages[agentMessages.length - 1];
-  const isCurrent = useAppStore.getState().currentConversationId === conversationId;
+  const topRoute = useAppStore.getState().pageStack.at(-1);
+  const isCurrent = topRoute?.type === 'chat-detail' && topRoute.conversationId === conversationId;
 
   // 将 Agent 消息写入与会话更新放在同一个 Dexie 事务中
   await db.transaction('rw', [db.messages, db.conversations], () => {
