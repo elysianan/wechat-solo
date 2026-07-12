@@ -12,15 +12,30 @@ describe('Chat Core Flow', () => {
     HTMLElement.prototype.scrollIntoView = vi.fn();
     await db.delete();
     await db.open();
-    useChatStore.setState({ conversations: [], messages: {}, loaded: false });
+    useChatStore.setState({
+      conversations: [],
+      messages: {},
+      loaded: false,
+      replyTimeScale: 0,
+      typingConversations: {},
+    });
     useContactStore.setState({ me: null, contacts: [], loaded: false });
-    useAppStore.setState({ currentTab: 'chats', currentPage: 'tabs', currentConversationId: null });
+    useAppStore.setState({
+      currentTab: 'chats',
+      currentPage: 'tabs',
+      currentConversationId: null,
+    });
     await initializeDatabase();
     await useContactStore.getState().loadContacts();
     await useChatStore.getState().loadChats();
   });
 
-  it('完整流程：进入详情、发送消息、返回后列表预览更新', async () => {
+  it('完整流程：进入详情、发送消息、收到 Agent 回复、返回后列表预览更新', async () => {
+    // 消除随机性：让 mom 一定会回复
+    await db.contacts.where('id').equals('mom').modify((contact) => {
+      contact.persona.behavior.readButNoReplyChance = 0;
+    });
+
     render(<App />);
 
     // 等待聊天列表渲染
@@ -28,8 +43,12 @@ describe('Chat Core Flow', () => {
       expect(screen.getAllByTestId('chat-list-item').length).toBeGreaterThan(0);
     });
 
-    // 点击第一个会话进入详情
-    fireEvent.click(screen.getAllByTestId('chat-list-item')[0]);
+    // 点击 mom 的会话进入详情
+    const momItem = screen.getAllByTestId('chat-list-item').find((el) =>
+      el.textContent?.includes('王阿姨')
+    );
+    expect(momItem).toBeDefined();
+    fireEvent.click(momItem!);
     await waitFor(() => {
       expect(screen.getByTestId('chat-detail-page')).toBeInTheDocument();
     });
@@ -38,7 +57,14 @@ describe('Chat Core Flow', () => {
     fireEvent.change(screen.getByTestId('text-input'), { target: { value: '集成测试消息' } });
     fireEvent.click(screen.getByTestId('send-button'));
     await waitFor(() => {
-      expect(screen.getAllByTestId('message-content').some((el) => el.textContent === '集成测试消息')).toBe(true);
+      expect(
+        screen.getAllByTestId('message-content').some((el) => el.textContent === '集成测试消息')
+      ).toBe(true);
+    });
+
+    // 等待 Agent 回复出现（timeScale=0，很快）
+    await waitFor(() => {
+      expect(screen.getAllByTestId('message-content').length).toBeGreaterThan(3);
     });
 
     // 返回列表
@@ -47,9 +73,11 @@ describe('Chat Core Flow', () => {
       expect(screen.getByTestId('chat-page')).toBeInTheDocument();
     });
 
-    // 列表最后消息预览更新
-    await waitFor(() => {
-      expect(screen.getByText('集成测试消息')).toBeInTheDocument();
-    });
+    // 列表最后消息预览更新为 Agent 回复或用户消息
+    const momItemAfter = screen.getAllByTestId('chat-list-item').find((el) =>
+      el.textContent?.includes('王阿姨')
+    );
+    expect(momItemAfter).toBeDefined();
+    expect(momItemAfter!.textContent).not.toContain('好的，知道了。');
   });
 });
