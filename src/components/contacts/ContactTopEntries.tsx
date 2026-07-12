@@ -1,11 +1,12 @@
 import { UserPlus, Users, Tag } from 'lucide-react';
+import type { ElementType } from 'react';
 import { useState } from 'react';
 import { WeChatToast } from '../common/WeChatToast';
 
 interface TopEntry {
   id: string;
   label: string;
-  icon: React.ElementType;
+  icon: ElementType;
 }
 
 // 顶部固定入口配置：新的朋友、群聊、标签

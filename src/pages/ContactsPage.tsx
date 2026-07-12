@@ -23,7 +23,7 @@ export function ContactsPage() {
   const searchKeyword = useContactStore((state) => state.searchKeyword);
   const setSearchKeyword = useContactStore((state) => state.setSearchKeyword);
   const sectionRefs = useRef<Record<string, HTMLDivElement | null>>({});
-  const [activeLetter, setActiveLetter] = useState<string>('A');
+  const [activeLetter, setActiveLetter] = useState<string>('');
 
   // 首次进入页面时加载联系人数据
   useEffect(() => {
@@ -31,10 +31,7 @@ export function ContactsPage() {
   }, [loaded, loadContacts]);
 
   // 根据搜索关键词过滤联系人
-  const filteredContacts = useMemo(() => {
-    const partialState = { contacts, searchKeyword } as Parameters<typeof selectFilteredContacts>[0];
-    return selectFilteredContacts(partialState);
-  }, [contacts, searchKeyword]);
+  const filteredContacts = useMemo(() => selectFilteredContacts({ contacts, searchKeyword }), [contacts, searchKeyword]);
 
   // 将过滤后的联系人按首字母分组并排序，# 排在最后
   const grouped = useMemo(() => {
@@ -52,6 +49,39 @@ export function ContactsPage() {
 
   // 分组字母列表，用于右侧索引
   const letters = useMemo(() => Array.from(grouped.keys()), [grouped]);
+
+  // 分组变化时，将高亮字母默认设为第一个分组字母
+  useEffect(() => {
+    setActiveLetter(letters[0] ?? '');
+  }, [letters]);
+
+  // 监听列表滚动，根据当前可见分组更新高亮字母
+  useEffect(() => {
+    if (searchKeyword) return;
+
+    const letterByEl = new Map<Element, string>();
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const visible = entries
+          .filter((entry) => entry.isIntersecting)
+          .sort((a, b) => Math.abs(a.boundingClientRect.top) - Math.abs(b.boundingClientRect.top));
+        if (visible.length > 0) {
+          const letter = letterByEl.get(visible[0].target);
+          if (letter) setActiveLetter(letter);
+        }
+      },
+      { threshold: 0 }
+    );
+
+    Object.entries(sectionRefs.current).forEach(([letter, el]) => {
+      if (el) {
+        letterByEl.set(el, letter);
+        observer.observe(el);
+      }
+    });
+
+    return () => observer.disconnect();
+  }, [grouped, searchKeyword]);
 
   // 点击字母索引时滚动到对应分组
   const handleLetterClick = (letter: string) => {

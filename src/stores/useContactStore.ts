@@ -46,7 +46,9 @@ export const useContactStore = create<ContactState>((set) => ({
 }));
 
 // 按搜索关键词过滤后的联系人列表
-export function selectFilteredContacts(state: ContactState): Contact[] {
+export function selectFilteredContacts(
+  state: Pick<ContactState, 'contacts' | 'searchKeyword'>
+): Contact[] {
   const keyword = state.searchKeyword.trim();
   if (!keyword) return state.contacts;
   return state.contacts.filter((contact) => contactMatches(contact, keyword));
