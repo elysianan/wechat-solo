@@ -10,7 +10,7 @@ interface AlphabetIndexProps {
 export function AlphabetIndex({ letters, activeLetter, onLetterClick }: AlphabetIndexProps) {
   return (
     <div
-      className="fixed right-1 top-1/2 -translate-y-1/2 flex flex-col items-center py-2 text-xs text-wechat-text-secondary z-20"
+      className="absolute right-1 top-1/2 -translate-y-1/2 flex flex-col items-center py-2 text-xs text-wechat-text-secondary z-20"
       data-testid="alphabet-index"
     >
       {letters.map((letter) => (

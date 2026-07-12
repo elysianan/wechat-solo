@@ -10,9 +10,9 @@ export function ContactDetailPage() {
   const popPage = useAppStore((state) => state.popPage);
   const pushPage = useAppStore((state) => state.pushPage);
 
-  // 从页面栈中找到当前联系人详情路由，获取 contactId
-  const route = [...pageStack].reverse().find((r) => r.type === 'contact-detail');
-  const contactId = route?.type === 'contact-detail' ? route.contactId : null;
+  // 本页面只在栈顶为 contact-detail 时渲染，直接读取栈顶路由
+  const topRoute = pageStack[pageStack.length - 1];
+  const contactId = topRoute?.type === 'contact-detail' ? topRoute.contactId : null;
 
   // 根据 contactId 查找对应联系人与会话
   const contact = useContactStore((state) =>
