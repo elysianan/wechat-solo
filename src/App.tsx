@@ -1,11 +1,12 @@
 import { TabBar } from './components/common/TabBar';
 import { ChatPage } from './pages/ChatPage';
+import { ChatDetailPage } from './pages/ChatDetailPage';
 import { ContactsPage } from './pages/ContactsPage';
 import { DiscoverPage } from './pages/DiscoverPage';
 import { MePage } from './pages/MePage';
 import { useAppStore } from './stores/useAppStore';
 
-const pages = {
+const tabPages = {
   chats: ChatPage,
   contacts: ContactsPage,
   discover: DiscoverPage,
@@ -14,12 +15,33 @@ const pages = {
 
 function App() {
   const currentTab = useAppStore((state) => state.currentTab);
-  const Page = pages[currentTab];
+  const currentPage = useAppStore((state) => state.currentPage);
+  const TabPage = tabPages[currentTab];
 
   return (
-    <div className="min-h-screen bg-wechat-bg pb-16">
-      <Page />
-      <TabBar />
+    <div className="relative w-full h-screen overflow-hidden bg-gray-100">
+      <div className="relative mx-auto max-w-phone h-full overflow-hidden bg-wechat-bg shadow-xl">
+        {/* Tab 页面层，进入详情时整体向左滑出 */}
+        <div
+          className={`absolute inset-0 transition-transform duration-300 ease-in-out ${
+            currentPage === 'chat-detail' ? '-translate-x-full' : 'translate-x-0'
+          }`}
+          data-testid="tab-layer"
+        >
+          <TabPage />
+          <TabBar />
+        </div>
+
+        {/* 聊天详情页，从右侧滑入 */}
+        <div
+          className={`absolute inset-0 transition-transform duration-300 ease-in-out ${
+            currentPage === 'chat-detail' ? 'translate-x-0' : 'translate-x-full'
+          }`}
+          data-testid="detail-layer"
+        >
+          <ChatDetailPage />
+        </div>
+      </div>
     </div>
   );
 }

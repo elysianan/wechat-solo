@@ -5,11 +5,15 @@ import { MessageInput } from '../components/chat/MessageInput';
 import { useAppStore } from '../stores/useAppStore';
 import { useChatStore } from '../stores/useChatStore';
 import { useContactStore } from '../stores/useContactStore';
+import type { Message } from '../types';
+
+// 空消息数组常量，避免 Zustand selector 返回新引用导致无限重渲染
+const EMPTY_MESSAGES: Message[] = [];
 
 export function ChatDetailPage() {
   const conversationId = useAppStore((state) => state.currentConversationId)!;
   const navigateBack = useAppStore((state) => state.navigateBackToTabs);
-  const messages = useChatStore((state) => state.messages[conversationId] || []);
+  const messages = useChatStore((state) => state.messages[conversationId] ?? EMPTY_MESSAGES);
   const sendMessage = useChatStore((state) => state.sendMessage);
   const markConversationRead = useChatStore((state) => state.markConversationRead);
   const conversation = useChatStore((state) =>
