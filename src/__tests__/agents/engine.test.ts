@@ -116,6 +116,17 @@ describe('AgentEngine', () => {
     expect(plan.readDelayMs).toBe(0);
   });
 
+  it('returns empty reply when persona rules is empty', () => {
+    const contact = createContact();
+    const plan = generateReply({
+      contact,
+      userMessage: createUserMessage('hi'),
+      recentMessages: [],
+      options: { timeScale: 0 },
+    });
+    expect(plan.replyMessages).toHaveLength(0);
+  });
+
   it('produces multiple messages when multiMessageChance is 1', () => {
     const contact = createContact({
       persona: {

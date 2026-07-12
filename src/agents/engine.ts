@@ -8,6 +8,9 @@ function randomBetween(min: number, max: number): number {
 
 // 从数组中随机取一项
 function pickRandom<T>(arr: T[]): T {
+  if (arr.length === 0) {
+    throw new Error('pickRandom: 数组不能为空');
+  }
   return arr[Math.floor(Math.random() * arr.length)];
 }
 
@@ -24,6 +27,9 @@ function matchesRule(rule: ReplyRule, content: string): boolean {
 
 // 按 weight 加权随机选一条规则
 function selectWeightedRule(rules: ReplyRule[]): ReplyRule {
+  if (rules.length === 0) {
+    throw new Error('selectWeightedRule: 规则数组不能为空');
+  }
   const totalWeight = rules.reduce((sum, rule) => sum + rule.weight, 0);
   let random = Math.random() * totalWeight;
   for (const rule of rules) {
