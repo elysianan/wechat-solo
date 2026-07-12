@@ -89,15 +89,18 @@ async function receiveAgentReply(plan: ReplyPlan) {
     createdAt: now + index * 500,
   }));
 
-  await db.messages.bulkAdd(agentMessages);
-
   const lastMessage = agentMessages[agentMessages.length - 1];
   const isCurrent = useAppStore.getState().currentConversationId === conversationId;
 
-  await db.conversations.where('id').equals(conversationId).modify((conversation) => {
-    conversation.lastMessageId = lastMessage.id;
-    conversation.updatedAt = now;
-    conversation.unreadCount = isCurrent ? 0 : conversation.unreadCount + 1;
+  // 将 Agent 消息写入与会话更新放在同一个 Dexie 事务中
+  await db.transaction('rw', [db.messages, db.conversations], () => {
+    return db.messages.bulkAdd(agentMessages).then(() =>
+      db.conversations.where('id').equals(conversationId).modify((conversation) => {
+        conversation.lastMessageId = lastMessage.id;
+        conversation.updatedAt = now;
+        conversation.unreadCount = isCurrent ? 0 : conversation.unreadCount + 1;
+      })
+    );
   });
 
   useChatStore.setState((state) => {
@@ -131,13 +134,15 @@ export const useChatStore = create<ChatState>((set) => ({
 
   loadChats: async () => {
     const conversations = await db.conversations.toArray();
-    const allMessages = await db.messages.toArray();
     const messages: Record<string, Message[]> = {};
 
+    // 按会话分别加载最近 50 条消息，避免消息量增长后一次性全量读取
     for (const conversation of conversations) {
-      messages[conversation.id] = allMessages
-        .filter((m) => m.conversationId === conversation.id)
-        .sort((a, b) => a.createdAt - b.createdAt);
+      const conversationMessages = await db.messages
+        .where('conversationId')
+        .equals(conversation.id)
+        .sortBy('createdAt');
+      messages[conversation.id] = conversationMessages.slice(-50);
     }
 
     set({ conversations, messages, loaded: true });
@@ -170,8 +175,16 @@ export const useChatStore = create<ChatState>((set) => ({
       createdAt: now,
     };
 
+    // 将消息与会话更新放在同一个 Dexie 事务中，避免不一致
     try {
-      await db.messages.add(message);
+      await db.transaction('rw', [db.messages, db.conversations], () => {
+        return db.messages.add(message).then(() =>
+          db.conversations.update(conversationId, {
+            lastMessageId: message.id,
+            updatedAt: now,
+          })
+        );
+      });
     } catch {
       set((state) => ({
         messages: {
@@ -184,11 +197,6 @@ export const useChatStore = create<ChatState>((set) => ({
       }));
       return;
     }
-
-    await db.conversations.update(conversationId, {
-      lastMessageId: message.id,
-      updatedAt: now,
-    });
 
     set((state) => {
       const conversationMessages = state.messages[conversationId] || [];
