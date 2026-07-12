@@ -7,28 +7,20 @@ export function formatChatTime(timestamp: number): string {
   const now = new Date();
   const date = new Date(timestamp);
 
-  const isSameDay =
-    now.getFullYear() === date.getFullYear() &&
-    now.getMonth() === date.getMonth() &&
-    now.getDate() === date.getDate();
+  const oneDay = 24 * 60 * 60 * 1000;
+  // 按自然日计算相差天数，避免同一天消息因小时不同被分到不同桶
+  const startOfDay = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDate());
+  const dayDiff = Math.floor((startOfDay(now).getTime() - startOfDay(date).getTime()) / oneDay);
 
-  if (isSameDay) {
+  if (dayDiff === 0) {
     return date.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit', hour12: false });
   }
 
-  const oneDay = 24 * 60 * 60 * 1000;
-  const yesterday = new Date(now.getTime() - oneDay);
-  const isYesterday =
-    yesterday.getFullYear() === date.getFullYear() &&
-    yesterday.getMonth() === date.getMonth() &&
-    yesterday.getDate() === date.getDate();
-  if (isYesterday) {
+  if (dayDiff === 1) {
     return '昨天';
   }
 
-  const diff = now.getTime() - date.getTime();
-  const oneWeek = 7 * oneDay;
-  if (diff < oneWeek) {
+  if (dayDiff >= 2 && dayDiff <= 6) {
     return date.toLocaleDateString('zh-CN', { weekday: 'short' });
   }
 
