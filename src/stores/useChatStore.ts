@@ -31,13 +31,6 @@ function scheduleStatusFlow(userMessage: Message, plan: ReplyPlan) {
   const sentAt = replyDelayMs * 0.15;
   const deliveredAt = replyDelayMs * 0.30;
 
-  // 有计划回复时立即显示"正在输入"，避免 timeScale 为 0 时打字时长被压缩为 0 导致无法观测
-  if (replyMessages.length > 0) {
-    useChatStore.setState((state) => ({
-      typingConversations: { ...state.typingConversations, [conversationId]: true },
-    }));
-  }
-
   // sent
   setTimeout(() => {
     useChatStore.getState().updateMessageStatus(userMessage.id, 'sent');
@@ -48,21 +41,28 @@ function scheduleStatusFlow(userMessage: Message, plan: ReplyPlan) {
     useChatStore.getState().updateMessageStatus(userMessage.id, 'delivered');
   }, deliveredAt);
 
-  // read + 回复
+  // read + 回复：先标记已读，再展示"正在输入"，最后写入回复
   setTimeout(() => {
     readUserMessageIds.forEach((id) => {
       useChatStore.getState().updateMessageStatus(id, 'read');
     });
 
-    if (replyMessages.length === 0) {
+    const shouldShowTyping = replyMessages.length > 0 || typingDurationMs > 0;
+    if (!shouldShowTyping) {
       useChatStore.setState((state) => ({
         typingConversations: { ...state.typingConversations, [conversationId]: false },
       }));
       return;
     }
 
+    useChatStore.setState((state) => ({
+      typingConversations: { ...state.typingConversations, [conversationId]: true },
+    }));
+
     setTimeout(() => {
-      receiveAgentReply(plan);
+      receiveAgentReply(plan).catch((err) => {
+        console.error('Agent 回复写入失败:', err);
+      });
       useChatStore.setState((state) => ({
         typingConversations: { ...state.typingConversations, [conversationId]: false },
       }));
@@ -99,7 +99,6 @@ async function receiveAgentReply(plan: ReplyPlan) {
 
   useChatStore.setState((state) => {
     const existing = state.messages[conversationId] || [];
-    const target = state.conversations.find((c) => c.id === conversationId);
     return {
       conversations: state.conversations.map((c) =>
         c.id === conversationId

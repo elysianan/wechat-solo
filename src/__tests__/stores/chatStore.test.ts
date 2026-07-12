@@ -74,7 +74,13 @@ describe('useChatStore agent flow', () => {
     const conversation = useChatStore.getState().conversations.find((c) => c.contactId === 'mom')!;
     await useChatStore.getState().sendMessage(conversation.id, '吃了吗');
 
+    // readDelay 之前不应出现"正在输入"
+    expect(useChatStore.getState().typingConversations[conversation.id]).toBeFalsy();
+
+    // 推进到 readDelay 之后，"正在输入"应出现
+    await vi.advanceTimersByTimeAsync(0);
     expect(useChatStore.getState().typingConversations[conversation.id]).toBe(true);
+
     await vi.runAllTimersAsync();
     expect(useChatStore.getState().typingConversations[conversation.id]).toBeFalsy();
   });
