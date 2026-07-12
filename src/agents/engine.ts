@@ -92,13 +92,16 @@ export function generateReply(input: GenerateReplyInput): ReplyPlan {
     const firstResponse = pickRandom(rule.responses);
     replyMessages.push({ content: firstResponse });
 
-    // 按概率追加第二条消息
+    // 按概率追加第二条消息，避免与第一条完全相同
     if (
       behavior.multiMessageChance > 0 &&
       rule.responses.length > 1 &&
       Math.random() < behavior.multiMessageChance
     ) {
-      replyMessages.push({ content: pickRandom(rule.responses) });
+      const remainingResponses = rule.responses.filter((response) => response !== firstResponse);
+      if (remainingResponses.length > 0) {
+        replyMessages.push({ content: pickRandom(remainingResponses) });
+      }
     }
   }
 
