@@ -10,6 +10,7 @@ import { MePage } from './pages/MePage';
 import { useAppStore } from './stores/useAppStore';
 import { useContactStore } from './stores/useContactStore';
 import { useChatStore } from './stores/useChatStore';
+import { useSettingsStore } from './stores/useSettingsStore';
 
 const tabPages = {
   chats: ChatPage,
@@ -31,14 +32,24 @@ function App() {
   const contactsLoaded = useContactStore((state) => state.loaded);
   const chatsLoaded = useChatStore((state) => state.loaded);
 
+  // 设置：深色模式 + 启动加载
+  const darkMode = useSettingsStore((state) => state.darkMode);
+  const settingsLoaded = useSettingsStore((state) => state.loaded);
+  const loadSettings = useSettingsStore((state) => state.loadSettings);
+
   useEffect(() => {
     if (!contactsLoaded) loadContacts();
     if (!chatsLoaded) loadChats();
-  }, [contactsLoaded, loadContacts, chatsLoaded, loadChats]);
+    if (!settingsLoaded) loadSettings();
+  }, [contactsLoaded, loadContacts, chatsLoaded, loadChats, settingsLoaded, loadSettings]);
 
   return (
     <div className="relative w-full h-screen overflow-hidden bg-gray-100">
-      <div className="relative mx-auto max-w-phone h-full overflow-hidden bg-wechat-bg shadow-xl">
+      <div
+        className="relative mx-auto max-w-phone h-full overflow-hidden bg-wechat-bg shadow-xl"
+        data-theme={darkMode ? 'dark' : 'light'}
+        data-testid="phone-shell"
+      >
         {/* Tab 页面层 */}
         <div
           className={`absolute inset-0 transition-transform duration-300 ease-in-out ${

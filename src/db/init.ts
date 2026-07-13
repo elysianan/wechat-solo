@@ -29,7 +29,7 @@ export async function initializeDatabase(): Promise<void> {
         darkMode: false,
         soundEnabled: true,
         vibrationEnabled: true,
-        version: '1.0.0-Demo',
+        version: '1.4.0-Sprint4',
       });
     }
   );

@@ -10,10 +10,12 @@ export default {
         wechat: {
           green: '#07C160',
           'green-dark': '#06ad56',
-          bg: '#EDEDED',
-          'text-primary': '#000000',
-          'text-secondary': '#888888',
-          divider: '#E5E5E5',
+          // 以下颜色走 CSS 变量，支持深色模式（见 index.css）
+          bg: 'var(--wechat-bg)',
+          card: 'var(--wechat-card)',
+          'text-primary': 'var(--wechat-text-primary)',
+          'text-secondary': 'var(--wechat-text-secondary)',
+          divider: 'var(--wechat-divider)',
         }
       },
       maxWidth: {

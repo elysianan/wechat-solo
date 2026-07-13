@@ -2,6 +2,23 @@
 @tailwind components;
 @tailwind utilities;
 
+/* 主题色变量：浅色为默认，深色通过 [data-theme="dark"] 覆盖 */
+:root {
+  --wechat-bg: #ededed;
+  --wechat-card: #ffffff;
+  --wechat-text-primary: #000000;
+  --wechat-text-secondary: #888888;
+  --wechat-divider: #e5e5e5;
+}
+
+[data-theme='dark'] {
+  --wechat-bg: #111111;
+  --wechat-card: #1c1c1e;
+  --wechat-text-primary: #ededed;
+  --wechat-text-secondary: #8a8a8a;
+  --wechat-divider: #2c2c2e;
+}
+
 body {
   @apply bg-gray-100;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
