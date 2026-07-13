@@ -22,7 +22,7 @@ const DEFAULT_SETTINGS = {
 };
 
 // 应用设置状态：持久化到 IndexedDB 的 settings 表
-export const useSettingsStore = create<SettingsState>((set, get) => ({
+export const useSettingsStore = create<SettingsState>((set) => ({
   ...DEFAULT_SETTINGS,
   loaded: false,
 

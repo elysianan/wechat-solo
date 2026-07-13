@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { TabBar } from './components/common/TabBar';
+import { Watermark } from './components/common/Watermark';
 import { ChatPage } from './pages/ChatPage';
 import { ChatDetailPage } from './pages/ChatDetailPage';
 import { ContactsPage } from './pages/ContactsPage';
@@ -80,6 +81,9 @@ function App() {
           {topRoute.type === 'settings' && <SettingsPage />}
           {topRoute.type === 'about' && <AboutPage />}
         </div>
+
+        {/* 底部水印 */}
+        <Watermark />
       </div>
     </div>
   );

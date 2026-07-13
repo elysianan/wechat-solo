@@ -52,7 +52,7 @@ export function DiscoverPage() {
       {groups.map((group, groupIndex) => (
         <div
           key={groupIndex}
-          className={`${groupIndex > 0 ? 'mt-2' : ''} bg-white divide-y divide-wechat-divider`}
+          className={`${groupIndex > 0 ? 'mt-2' : ''} bg-wechat-card divide-y divide-wechat-divider`}
           data-testid={`discover-group-${groupIndex}`}
         >
           {group.map((entry) => {
@@ -61,7 +61,7 @@ export function DiscoverPage() {
               <button
                 key={entry.id}
                 onClick={() => handleClick(entry)}
-                className="w-full flex items-center px-4 py-3 active:bg-gray-100"
+                className="w-full flex items-center px-4 py-3 active:bg-wechat-bg"
                 data-testid={`discover-entry-${entry.id}`}
               >
                 <Icon size={22} className="text-wechat-green" />

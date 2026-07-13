@@ -45,7 +45,7 @@ export function MessageBubble({ message, isMe, contactName, contactAvatar }: Mes
         )}
         <div
           className={`relative px-3 py-2 rounded-lg text-sm break-words ${
-            isMe ? 'bg-wechat-green text-white' : 'bg-white text-wechat-text-primary'
+            isMe ? 'bg-wechat-green text-white' : 'bg-wechat-card text-wechat-text-primary'
           }`}
           data-testid="message-content"
         >

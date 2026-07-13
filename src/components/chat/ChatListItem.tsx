@@ -23,7 +23,7 @@ export function ChatListItem({
   return (
     <div
       onClick={onClick}
-      className="flex items-center px-4 py-3 bg-white active:bg-gray-100 cursor-pointer"
+      className="flex items-center px-4 py-3 bg-wechat-card active:bg-wechat-bg cursor-pointer"
       data-testid="chat-list-item"
     >
       <div className="relative">

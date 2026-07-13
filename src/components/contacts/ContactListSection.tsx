@@ -13,12 +13,12 @@ export function ContactListSection({ letter, contacts, onContactClick }: Contact
       <div className="px-4 py-1 text-sm text-wechat-text-secondary bg-wechat-bg sticky top-12" data-testid="section-letter">
         {letter}
       </div>
-      <div className="bg-white">
+      <div className="bg-wechat-card">
         {contacts.map((contact) => (
           <button
             key={contact.id}
             onClick={() => onContactClick(contact.id)}
-            className="w-full flex items-center px-4 py-3 border-b border-wechat-divider last:border-b-0 active:bg-gray-100"
+            className="w-full flex items-center px-4 py-3 border-b border-wechat-divider last:border-b-0 active:bg-wechat-bg"
             data-testid="contact-list-item"
           >
             <img src={contact.avatar} alt={contact.name} className="w-10 h-10 rounded-md bg-gray-200 object-cover" />

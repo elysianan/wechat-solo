@@ -22,14 +22,14 @@ export function ContactTopEntries() {
 
   return (
     <>
-      <div className="bg-white divide-y divide-wechat-divider" data-testid="contact-top-entries">
+      <div className="bg-wechat-card divide-y divide-wechat-divider" data-testid="contact-top-entries">
         {entries.map((entry) => {
           const Icon = entry.icon;
           return (
             <button
               key={entry.id}
               onClick={() => setToastVisible(true)}
-              className="w-full flex items-center px-4 py-3 active:bg-gray-100"
+              className="w-full flex items-center px-4 py-3 active:bg-wechat-bg"
               data-testid={`top-entry-${entry.id}`}
             >
               <Icon size={22} className="text-wechat-green" />

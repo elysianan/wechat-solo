@@ -28,7 +28,7 @@ export function MomentsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-white pb-4" data-testid="moments-page">
+    <div className="min-h-screen bg-wechat-card pb-4" data-testid="moments-page">
       <MomentCoverHeader me={me} onBack={popPage} />
       <div className="mt-10">
         {moments.map((moment) => (

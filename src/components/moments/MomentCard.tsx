@@ -31,7 +31,7 @@ export function MomentCard({ moment, onCommentClick }: MomentCardProps) {
     .join('、');
 
   return (
-    <div className="px-4 py-4 border-b border-wechat-divider bg-white" data-testid="moment-card">
+    <div className="px-4 py-4 border-b border-wechat-divider bg-wechat-card" data-testid="moment-card">
       <div className="flex">
         <img src={author.avatar} alt={author.name} className="w-10 h-10 rounded-md bg-gray-200 object-cover" />
         <div className="ml-3 flex-1">

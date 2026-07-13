@@ -21,7 +21,7 @@ export function TabBar() {
   const { currentTab, setCurrentTab } = useAppStore();
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-wechat-divider max-w-phone mx-auto">
+    <nav className="fixed bottom-0 left-0 right-0 bg-wechat-card border-t border-wechat-divider max-w-phone mx-auto">
       <div className="flex justify-around py-2">
         {tabs.map((tab) => {
           const Icon = tab.icon;

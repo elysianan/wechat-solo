@@ -17,7 +17,7 @@ export function TypingIndicator({ avatar, name }: TypingIndicatorProps) {
       />
       <div className="flex flex-col items-start max-w-[70%]">
         <span className="text-xs text-wechat-text-secondary mb-1">{name}</span>
-        <div className="px-3 py-2 rounded-lg text-sm bg-white text-wechat-text-primary">
+        <div className="px-3 py-2 rounded-lg text-sm bg-wechat-card text-wechat-text-primary">
           <div className="flex items-center gap-1">
             <span className="text-xs text-wechat-text-secondary">对方正在输入</span>
             <span className="inline-flex gap-0.5">

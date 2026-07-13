@@ -21,13 +21,13 @@ export function BottomInputSheet({ visible, onSubmit, onCancel }: BottomInputShe
   return (
     <div className="fixed inset-0 z-50" data-testid="bottom-input-sheet">
       <div className="absolute inset-0 bg-black/30" onClick={onCancel} />
-      <div className="absolute bottom-0 left-0 right-0 bg-white p-3 flex gap-2">
+      <div className="absolute bottom-0 left-0 right-0 bg-wechat-card p-3 flex gap-2">
         <input
           type="text"
           value={content}
           onChange={(e) => setContent(e.target.value)}
           placeholder="评论"
-          className="flex-1 bg-gray-100 rounded-md px-3 py-2 text-sm outline-none"
+          className="flex-1 bg-wechat-bg rounded-md px-3 py-2 text-sm outline-none"
           data-testid="bottom-input"
           autoFocus
         />

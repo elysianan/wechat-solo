@@ -37,7 +37,7 @@ export function ContactDetailPage() {
       <Header title="详细资料" onBack={popPage} />
       <div className="flex-1">
         {/* 头像与基础信息 */}
-        <div className="bg-white mt-2 px-4 py-4 flex items-center">
+        <div className="bg-wechat-card mt-2 px-4 py-4 flex items-center">
           <img
             src={contact.avatar}
             alt={contact.name}
@@ -50,7 +50,7 @@ export function ContactDetailPage() {
         </div>
 
         {/* 地区、个性签名、标签 */}
-        <div className="bg-white mt-2 divide-y divide-wechat-divider">
+        <div className="bg-wechat-card mt-2 divide-y divide-wechat-divider">
           <div className="px-4 py-3 flex">
             <span className="text-sm text-wechat-text-secondary w-20">地区</span>
             <span className="text-sm text-wechat-text-primary flex-1">{contact.region}</span>
@@ -66,7 +66,7 @@ export function ContactDetailPage() {
                 contact.tags.map((tag) => (
                   <span
                     key={tag}
-                    className="px-2 py-0.5 text-xs bg-gray-100 text-wechat-text-secondary rounded"
+                    className="px-2 py-0.5 text-xs bg-wechat-bg text-wechat-text-secondary rounded"
                   >
                     {tag}
                   </span>
@@ -80,7 +80,7 @@ export function ContactDetailPage() {
       </div>
 
       {/* 底部发消息按钮 */}
-      <div className="p-4 bg-white border-t border-wechat-divider">
+      <div className="p-4 bg-wechat-card border-t border-wechat-divider">
         <button
           onClick={handleSendMessage}
           className="w-full bg-wechat-green text-white py-2 rounded-md"

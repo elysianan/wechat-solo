@@ -39,7 +39,7 @@ export function MessageInput({ onSend }: MessageInputProps) {
           onChange={(e) => setText(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && handleSend()}
           placeholder="请输入消息"
-          className="flex-1 bg-white rounded-md px-3 py-2 text-sm outline-none"
+          className="flex-1 bg-wechat-card rounded-md px-3 py-2 text-sm outline-none"
           data-testid="text-input"
         />
         <button

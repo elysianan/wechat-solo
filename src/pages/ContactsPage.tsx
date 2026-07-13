@@ -109,7 +109,7 @@ export function ContactsPage() {
           value={searchKeyword}
           onChange={(e) => setSearchKeyword(e.target.value)}
           placeholder="搜索"
-          className="w-full bg-white rounded-md px-3 py-2 text-sm outline-none"
+          className="w-full bg-wechat-card rounded-md px-3 py-2 text-sm outline-none"
           data-testid="contacts-search"
         />
       </div>
