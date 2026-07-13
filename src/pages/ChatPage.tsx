@@ -21,6 +21,13 @@ export function ChatPage() {
     }
   }, [loaded, loadChats]);
 
+  // 聊天列表停留期间启动主动发起调度器, 离开页面停止
+  useEffect(() => {
+    const store = useChatStore.getState();
+    store.startInitiateScheduler();
+    return () => store.stopInitiateScheduler();
+  }, []);
+
   // 置顶会话排在最前，其余按最后更新时间倒序
   const sortedConversations = useMemo(() => {
     return [...conversations].sort((a, b) => {

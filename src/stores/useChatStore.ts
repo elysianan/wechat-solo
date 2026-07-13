@@ -16,10 +16,19 @@ function escapeRegExp(text: string): string {
 const sessionUsedResponses = new Set<string>();
 const sessionRuleUsage = new Map<string, number>();
 
-// 测试用: 重置 session 防重复状态
+// 主动发起对话调度器状态
+let initiateTimer: ReturnType<typeof setInterval> | null = null;
+let lastGlobalInitiateAt = 0; // 全局冷却时间戳(内存级, 单人冷却走 lastInitiatedAt 持久化)
+
+const INITIATE_CHECK_INTERVAL_MS = 60_000; // 检查间隔: 固定 60s 不缩放(避免 timeScale=0 时死循环)
+const INITIATE_GLOBAL_COOLDOWN_MS = 90_000; // 全局冷却: 90s × timeScale
+const INITIATE_CONTACT_COOLDOWN_MS = 5 * 60_000; // 单联系人冷却: 5 分钟 × timeScale
+
+// 测试用: 重置 session 防重复与调度器冷却状态
 export function __resetSessionState(): void {
   sessionUsedResponses.clear();
   sessionRuleUsage.clear();
+  lastGlobalInitiateAt = 0;
 }
 
 // 解析消息中的 @成员：最长昵称优先，要求 @名字 后是空格/标点/结尾（边界匹配）
@@ -46,6 +55,85 @@ interface ChatState {
   markConversationRead: (conversationId: string) => Promise<void>;
   updateMessageStatus: (messageId: string, status: Message['status']) => Promise<void>;
   setReplyTimeScale: (scale: number) => void;
+  startInitiateScheduler: () => void;
+  stopInitiateScheduler: () => void;
+}
+
+// 加权随机选取
+function pickWeighted<T>(items: T[], weightOf: (item: T) => number): T {
+  const total = items.reduce((sum, item) => sum + weightOf(item), 0);
+  let random = Math.random() * total;
+  for (const item of items) {
+    random -= weightOf(item);
+    if (random <= 0) {
+      return item;
+    }
+  }
+  return items[items.length - 1];
+}
+
+// 主动发起一次对话尝试: 冷却判定 → 加权选人 → 话题注入
+async function tryInitiate(): Promise<void> {
+  const state = useChatStore.getState();
+  const timeScale = state.replyTimeScale;
+  const now = Date.now();
+
+  // 全局冷却(内存级, 页面刷新重置)
+  if (now - lastGlobalInitiateAt < INITIATE_GLOBAL_COOLDOWN_MS * timeScale) {
+    return;
+  }
+
+  // 候选: 单聊会话且联系人过了单人冷却(lastInitiatedAt 持久化, 刷新后仍有效)
+  const available = state.conversations.filter(
+    (conversation) =>
+      conversation.type === 'single' &&
+      conversation.contactId &&
+      now - (conversation.lastInitiatedAt ?? 0) >= INITIATE_CONTACT_COOLDOWN_MS * timeScale
+  );
+  if (available.length === 0) {
+    return;
+  }
+
+  const contacts = (
+    await db.contacts.bulkGet(available.map((c) => c.contactId!))
+  ).filter((c): c is Contact => c !== undefined);
+
+  // 话题池为空的联系人参与不了(规则库扩容前是空数组占位)
+  const pool = contacts
+    .map((contact) => ({
+      contact,
+      conversation: available.find((c) => c.contactId === contact.id)!,
+    }))
+    .filter((item) => item.contact.persona.initiateTopics.length > 0);
+  if (pool.length === 0) {
+    return;
+  }
+
+  // 按人设 initiateChance 加权选人, 话题参与 session 防重复
+  const picked = pickWeighted(pool, (item) => item.contact.persona.initiateChance);
+  const topics = picked.contact.persona.initiateTopics;
+  const unusedTopics = topics.filter((topic) => !sessionUsedResponses.has(topic));
+  const topicPool = unusedTopics.length > 0 ? unusedTopics : topics;
+  const topic = topicPool[Math.floor(Math.random() * topicPool.length)];
+  sessionUsedResponses.add(topic);
+
+  await receiveAgentReply({
+    conversationId: picked.conversation.id,
+    contactId: picked.contact.id,
+    readUserMessageIds: [],
+    readDelayMs: 0,
+    typingDurationMs: 0,
+    replyDelayMs: 0,
+    replyMessages: [{ content: topic }],
+  });
+
+  lastGlobalInitiateAt = now;
+  await db.conversations.update(picked.conversation.id, { lastInitiatedAt: now });
+  useChatStore.setState((current) => ({
+    conversations: current.conversations.map((c) =>
+      c.id === picked.conversation.id ? { ...c, lastInitiatedAt: now } : c
+    ),
+  }));
 }
 
 // 按 Agent 计划调度状态流转与回复
@@ -248,6 +336,26 @@ export const useChatStore = create<ChatState>((set) => ({
   },
 
   setReplyTimeScale: (scale) => set({ replyTimeScale: scale }),
+
+  // 主动发起对话调度器: 聊天列表页挂载时启动, 卸载时停止
+  startInitiateScheduler: () => {
+    if (initiateTimer) {
+      return;
+    }
+    // 回调返回 promise: 测试中 advanceTimersByTimeAsync 可 await 完整异步链
+    initiateTimer = setInterval(() => {
+      return tryInitiate().catch((error) => {
+        console.error('主动发起对话失败:', error);
+      });
+    }, INITIATE_CHECK_INTERVAL_MS);
+  },
+
+  stopInitiateScheduler: () => {
+    if (initiateTimer) {
+      clearInterval(initiateTimer);
+      initiateTimer = null;
+    }
+  },
 
   updateMessageStatus: async (messageId, status) => {
     await db.messages.update(messageId, { status });
