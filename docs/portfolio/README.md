@@ -2,7 +2,7 @@
 
 > **项目定位**：高保真微信 Demo + 多 Agent 人设驱动的单机社交模拟器  
 > **目标岗位**：AI 产品助理 / AI Product Assistant  
-> **当前阶段**：Sprint 0 已完成（项目骨架与数据地基）  
+> **当前阶段**：Sprint 4 已完成（v1.4.0，全部 5 个 Sprint 收官）  
 > **仓库路径**：`C:\Users\Nan\wechat-solo`
 
 ---
@@ -156,6 +156,16 @@ wechat-solo/
 
 将所有领域类型（包括 `AgentPersona`、`ReplyRule` 等）统一放在 `src/types/index.ts`，`src/agents/types.ts` 仅做 re-export，彻底避免循环导入。
 
+### 5.5 深色模式采用 CSS 变量主题，而非 dark: 变体
+
+**决策原因**：
+- Tailwind `dark:` 变体需要在每个页面、每个元素上补类名，改动面巨大且容易遗漏。
+- CSS 变量方案只需改 `tailwind.config.js` 色板 + `index.css` 两处，**页面代码零改动**即可全局换肤。
+
+**实现方式**：
+- wechat 色板改为 `var(--wechat-bg)` 等变量引用，`:root` 定义浅色默认值，`[data-theme="dark"]` 覆盖深色值。
+- `useSettingsStore` 持久化到 IndexedDB，App 根容器绑定 `data-theme`，切换即时生效、刷新保留。
+
 ---
 
 ## 六、开发流程亮点
@@ -198,31 +208,17 @@ wechat-solo/
 ### v0.1.0（Sprint 0）✅ 已完成
 项目骨架与数据地基：类型、种子数据、IndexedDB、Store、Tab 布局壳。
 
-### v0.2.0（Sprint 1）聊天核心流程
-- 聊天列表页（按最后消息时间倒序）
-- 聊天详情页
-- 发送文字消息
-- 消息气泡与状态图标（单灰勾 → 双灰勾 → 双绿勾）
-- 页面转场动画
+### v0.2.0（Sprint 1）✅ 已完成
+聊天核心流程：聊天列表、聊天详情、发送消息、消息状态图标、页面转场动画。
 
-### v0.3.0（Sprint 2）Agent 引擎与消息状态
-- 规则驱动 Agent 回复引擎
-- “对方正在输入…”状态
-- 回复延迟模拟
-- 已读状态自动触发
+### v0.3.0（Sprint 2）✅ 已完成
+Agent 引擎与消息状态：规则驱动回复引擎、“对方正在输入…”、回复延迟模拟、已读自动触发。
 
-### v0.4.0（Sprint 3）通讯录与朋友圈
-- 通讯录字母索引
-- 搜索联系人
-- 好友资料页
-- 朋友圈列表、点赞、评论
+### v0.4.0（Sprint 3）✅ 已完成
+通讯录与朋友圈：字母索引、拼音搜索、好友资料页、朋友圈列表/点赞/评论持久化。
 
-### v0.5.0（Sprint 4）个人中心与打磨
-- “我”页面
-- 个人信息编辑
-- 支付页 Mock
-- 设置页（深色模式、关于）
-- UI 细节打磨与作品集包装
+### v0.5.0（Sprint 4）✅ 已完成
+个人中心与打磨：「我」页面、个人信息编辑持久化、支付页 Mock、设置页（深色模式/关于）、底部水印、UI 细节走查。
 
 ---
 
@@ -246,7 +242,7 @@ npm run build  # 生产构建
 >
 > 我首先做了明确的产品边界：聊天交互必须真实，支付/语音等敏感功能只保留 UI 并提示演示模式。然后设计了 5 个不同人设的 Agent，用规则引擎驱动回复，并模拟了延迟、'正在输入'等真实社交细节。
 >
-> 技术实现上，我用 React + TypeScript + Zustand + Dexie 搭建了完整的数据流和状态管理，写了 30 个测试保证质量。整个开发过程用 Claude Code 的子代理驱动，每个 Task 都经过实现、审查、修复的闭环。”
+> 技术实现上，我用 React + TypeScript + Zustand + Dexie 搭建了完整的数据流和状态管理，写了 119 个测试保证质量。深色模式用 CSS 变量主题实现，页面代码零改动全局换肤。整个开发过程用 Claude Code 的子代理驱动，每个 Task 都经过实现、审查、修复的闭环。”
 
 ---
 
@@ -254,11 +250,15 @@ npm run build  # 生产构建
 
 - 产品设计规格：`docs/superpowers/specs/2026-07-12-wechat-solo-design.md`
 - Sprint 0 实施计划：`docs/superpowers/plans/2026-07-12-sprint-0-project-skeleton.md`
+- Sprint 1 实施计划：`docs/superpowers/plans/2026-07-12-sprint-1-chat-core-flow.md`
+- Sprint 2 设计/计划：`docs/superpowers/specs/2026-07-12-wechat-solo-sprint2-agent-engine-design.md`
+- Sprint 3 设计/计划：`docs/superpowers/specs/2026-07-13-wechat-solo-sprint3-contacts-discover-design.md`
+- Sprint 4 设计/计划：`docs/superpowers/specs/2026-07-13-wechat-solo-sprint4-me-settings-design.md`
 - 项目 README：`README.md`
 - 进度记录：`.superpowers/sdd/progress.md`
 
 ---
 
-*最后更新：2026-07-12*  
+*最后更新：2026-07-13*  
 *作者：Nan*  
-*版本：Sprint 0 完成*
+*版本：v1.4.0 · Sprint 4 完成（全 5 个 Sprint 收官，119 测试通过）*
