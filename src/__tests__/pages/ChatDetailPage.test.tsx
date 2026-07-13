@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, vi, type Mock } from 'vitest';
 import { render, screen, waitFor, fireEvent } from '@testing-library/react';
 import { ChatDetailPage } from '../../pages/ChatDetailPage';
 import { db } from '../../db/database';
@@ -54,6 +54,36 @@ describe('ChatDetailPage', () => {
     render(<ChatDetailPage />);
     await waitFor(() => {
       expect(screen.getByTestId('typing-indicator')).toBeInTheDocument();
+    });
+  });
+
+  it('首次进入会话用 auto 瞬间定位底部（避免与滑入动画叠加回弹）', async () => {
+    const conversation = useChatStore.getState().conversations[0];
+    useAppStore.setState({ pageStack: [{ type: 'chat-detail', conversationId: conversation.id }] });
+    render(<ChatDetailPage />);
+    await waitFor(() => {
+      expect(screen.getAllByTestId('message-bubble').length).toBeGreaterThan(0);
+    });
+    const scrollMock = HTMLElement.prototype.scrollIntoView as Mock;
+    expect(scrollMock).toHaveBeenCalledWith({ behavior: 'auto' });
+    expect(scrollMock).not.toHaveBeenCalledWith({ behavior: 'smooth' });
+  });
+
+  it('同一会话内新消息到来用 smooth 滚动到底部', async () => {
+    const conversation = useChatStore.getState().conversations[0];
+    useAppStore.setState({ pageStack: [{ type: 'chat-detail', conversationId: conversation.id }] });
+    render(<ChatDetailPage />);
+    await waitFor(() => {
+      expect(screen.getByTestId('message-input')).toBeInTheDocument();
+    });
+    const scrollMock = HTMLElement.prototype.scrollIntoView as Mock;
+    scrollMock.mockClear();
+
+    fireEvent.change(screen.getByTestId('text-input'), { target: { value: '你好' } });
+    fireEvent.click(screen.getByTestId('send-button'));
+
+    await waitFor(() => {
+      expect(scrollMock).toHaveBeenCalledWith({ behavior: 'smooth' });
     });
   });
 });

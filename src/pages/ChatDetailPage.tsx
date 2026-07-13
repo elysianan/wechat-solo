@@ -35,6 +35,8 @@ export function ChatDetailPage() {
   );
   const contacts = useContactStore((state) => state.contacts);
   const bottomRef = useRef<HTMLDivElement>(null);
+  // 记录上一次的会话 id：进入/切换会话瞬间定位底部，同会话新消息才平滑滚动
+  const prevConvRef = useRef<string | null>(null);
 
   useEffect(() => {
     if (conversationId) {
@@ -43,8 +45,12 @@ export function ChatDetailPage() {
   }, [conversationId, markConversationRead]);
 
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages, isTyping]);
+    // 进入或切换会话时用 auto 瞬间定位，避免与外层 300ms 滑入动画叠加产生回弹；
+    // 同一会话内新消息到来才用 smooth 平滑滚动
+    const isNewConversation = prevConvRef.current !== conversationId;
+    bottomRef.current?.scrollIntoView({ behavior: isNewConversation ? 'auto' : 'smooth' });
+    prevConvRef.current = conversationId;
+  }, [messages, isTyping, conversationId]);
 
   // 未选择会话时不渲染（App.tsx 始终挂载该组件用于转场动画）
   if (!conversationId || !conversation) return null;
