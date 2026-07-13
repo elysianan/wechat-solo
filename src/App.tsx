@@ -6,6 +6,7 @@ import { ContactsPage } from './pages/ContactsPage';
 import { ContactDetailPage } from './pages/ContactDetailPage';
 import { DiscoverPage } from './pages/DiscoverPage';
 import { MomentsPage } from './pages/MomentsPage';
+import { ProfileEditPage } from './pages/ProfileEditPage';
 import { MePage } from './pages/MePage';
 import { useAppStore } from './stores/useAppStore';
 import { useContactStore } from './stores/useContactStore';
@@ -71,6 +72,7 @@ function App() {
           {topRoute.type === 'chat-detail' && <ChatDetailPage />}
           {topRoute.type === 'contact-detail' && <ContactDetailPage />}
           {topRoute.type === 'moments' && <MomentsPage />}
+          {topRoute.type === 'profile-edit' && <ProfileEditPage />}
         </div>
       </div>
     </div>

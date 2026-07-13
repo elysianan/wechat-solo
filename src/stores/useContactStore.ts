@@ -9,6 +9,7 @@ interface ContactState {
   loaded: boolean;
   searchKeyword: string;
   loadContacts: () => Promise<void>;
+  updateMe: (patch: Partial<Omit<Me, 'id'>>) => Promise<void>;
   setSearchKeyword: (keyword: string) => void;
 }
 
@@ -40,6 +41,12 @@ export const useContactStore = create<ContactState>((set) => ({
     const me = await db.me.get('me');
     const contacts = await db.contacts.toArray();
     set({ me: me ?? null, contacts, loaded: true });
+  },
+
+  // 更新当前用户信息：写库并同步内存态
+  updateMe: async (patch) => {
+    await db.me.update('me', patch);
+    set((state) => ({ me: state.me ? { ...state.me, ...patch } : state.me }));
   },
 
   setSearchKeyword: (keyword) => set({ searchKeyword: keyword }),
