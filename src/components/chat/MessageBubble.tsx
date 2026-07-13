@@ -41,7 +41,7 @@ export function MessageBubble({ message, isMe, contactName, contactAvatar }: Mes
       )}
       <div className={`flex flex-col ${isMe ? 'items-end' : 'items-start'} max-w-[70%]`}>
         {!isMe && (
-          <span className="text-xs text-wechat-text-secondary mb-1">{contactName}</span>
+          <span className="text-xs text-wechat-text-secondary mb-1" data-testid="message-sender-name">{contactName}</span>
         )}
         <div
           className={`relative px-3 py-2 rounded-lg text-sm break-words ${
