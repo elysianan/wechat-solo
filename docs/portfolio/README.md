@@ -3,6 +3,7 @@
 > **项目定位**：高保真微信 Demo + 多 Agent 人设驱动的单机社交模拟器  
 > **目标岗位**：AI 产品助理 / AI Product Assistant  
 > **当前阶段**：Sprint 5 已完成（v1.5.0，P2 规划落地）  
+> **在线 Demo**：https://elysianan.github.io/wechat-solo/ （纯前端,打开即玩,数据存于浏览器本地)  
 > **仓库路径**：`C:\Users\Nan\wechat-solo`
 
 ---

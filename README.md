@@ -2,6 +2,12 @@
 
 一个高保真还原微信核心体验、并由多 Agent 人设驱动的单机社交模拟器。
 
+## 在线 Demo
+
+**https://elysianan.github.io/wechat-solo/**
+
+纯前端应用,数据存于浏览器 IndexedDB,首次打开自动生成种子数据(5 位人设好友 + 群聊 + 朋友圈)。
+
 ## 产品定位
 
 WeChat Solo 用于展示 AI 产品助理的核心能力：
