@@ -14,6 +14,7 @@ export interface GenerateReplyInput {
   recentMessages: Message[];
   options?: {
     timeScale?: number; // 默认 1；0 表示立即响应
+    forceReply?: boolean; // true 时跳过"已读不回"判定（@提及场景必回）
   };
 }
 

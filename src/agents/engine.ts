@@ -59,6 +59,7 @@ function selectRule(rules: ReplyRule[], content: string): ReplyRule | undefined 
 export function generateReply(input: GenerateReplyInput): ReplyPlan {
   const { contact, userMessage, recentMessages, options } = input;
   const timeScale = options?.timeScale ?? 1;
+  const forceReply = options?.forceReply ?? false;
   const behavior = contact.persona.behavior;
 
   // 计算时间线
@@ -72,8 +73,8 @@ export function generateReply(input: GenerateReplyInput): ReplyPlan {
     .filter((message) => message.senderId === 'me')
     .map((message) => message.id);
 
-  // 已读不回
-  if (Math.random() < behavior.readButNoReplyChance) {
+  // 已读不回（@提及时必回，跳过该判定）
+  if (!forceReply && Math.random() < behavior.readButNoReplyChance) {
     return {
       conversationId: userMessage.conversationId,
       contactId: contact.id,
