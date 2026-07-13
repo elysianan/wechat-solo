@@ -1,4 +1,4 @@
-import type { Contact, Message } from '../types';
+import type { Contact, Conversation, Message } from '../types';
 
 export type {
   AgentBehavior,
@@ -12,6 +12,8 @@ export interface GenerateReplyInput {
   contact: Contact;
   userMessage: Message;
   recentMessages: Message[];
+  // 单聊会话(读取 storyProgress 用); 群聊不传, 剧情链不生效
+  conversation?: Conversation;
   options?: {
     timeScale?: number; // 默认 1；0 表示立即响应
     forceReply?: boolean; // true 时跳过"已读不回"判定（@提及场景必回）
@@ -34,4 +36,6 @@ export interface ReplyPlan {
   replyDelayMs: number;               // 从发送到 Agent 回复出现的总延迟
   replyMessages: Array<{ content: string }>;
   usedRuleId?: string;                // 本次命中的规则 id(已读不回时无)
+  // 剧情进度变更: 对象=更新, null=清除, undefined=不变
+  storyUpdate?: { chainId: string; step: number } | null;
 }

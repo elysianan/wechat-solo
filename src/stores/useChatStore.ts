@@ -338,6 +338,7 @@ export const useChatStore = create<ChatState>((set) => ({
         contact,
         userMessage: message,
         recentMessages,
+        conversation,
         options: {
           timeScale,
           sessionUsedResponses,
@@ -345,6 +346,24 @@ export const useChatStore = create<ChatState>((set) => ({
           userNickname: me?.nickname,
         },
       });
+
+      // 剧情进度变更持久化: null=清除, 对象=更新
+      if (plan.storyUpdate !== undefined) {
+        if (plan.storyUpdate === null) {
+          await db.conversations.where('id').equals(conversationId).modify((c) => {
+            delete c.storyProgress;
+          });
+        } else {
+          await db.conversations.update(conversationId, { storyProgress: plan.storyUpdate });
+        }
+        set((state) => ({
+          conversations: state.conversations.map((c) =>
+            c.id === conversationId
+              ? { ...c, storyProgress: plan.storyUpdate ?? undefined }
+              : c
+          ),
+        }));
+      }
 
       scheduleStatusFlow(message, plan);
     } catch (error) {

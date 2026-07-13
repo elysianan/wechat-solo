@@ -47,6 +47,24 @@ export interface Conversation {
   isPinned: boolean;
   isMuted: boolean;
   updatedAt: number;
+  // 进行中的剧情链进度(单聊专用); 缺省表示无进行中剧情
+  storyProgress?: { chainId: string; step: number };
+  // 该联系人上次主动发起对话的时间戳(冷却用)
+  lastInitiatedAt?: number;
+}
+
+// 剧情链: 多轮剧本对话, 进度存于 Conversation.storyProgress
+export interface StoryChain {
+  id: string;
+  contactId: string;
+  // 用户消息命中这些关键词时, 按 triggerChance 概率进入剧情
+  triggerKeywords: string[];
+  triggerChance: number;
+  steps: Array<{
+    replies: string[];           // 该步 Agent 台词池, 随机取一
+    // 用户回复含这些词才推进到下一步; 缺省=任意回复都推进
+    advanceKeywords?: string[];
+  }>;
 }
 
 // 朋友圈点赞

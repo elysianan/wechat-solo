@@ -1,6 +1,7 @@
 import type { GenerateReplyInput, ReplyPlan } from './types';
 import type { ReplyRule } from '../types';
 import { getTimeWindow } from '../utils/timeWindow';
+import { STORY_CHAINS } from '../data/personas';
 
 // 生成 [min, max] 之间的随机数
 function randomBetween(min: number, max: number): number {
@@ -147,6 +148,76 @@ export function generateReply(input: GenerateReplyInput): ReplyPlan {
     .filter((message) => message.senderId === 'me')
     .map((message) => message.id);
 
+  // 剧情进度变更: 对象=更新, null=清除, undefined=不变
+  let storyUpdate: ReplyPlan['storyUpdate'];
+
+  // 构造剧情台词回复(必回, 跳过已读不回; 参与 session 防重复)
+  const buildStoryReply = (replies: string[]): { content: string } => {
+    const content = applyTemplate(
+      pickResponse(replies, options?.sessionUsedResponses),
+      '',
+      options?.userNickname ?? '我'
+    );
+    options?.sessionUsedResponses?.add(content);
+    return { content };
+  };
+
+  const storyPlan = (replyMessages: Array<{ content: string }>): ReplyPlan => ({
+    conversationId: userMessage.conversationId,
+    contactId: contact.id,
+    readUserMessageIds,
+    readDelayMs: readDelay,
+    typingDurationMs: typingDuration,
+    replyDelayMs: baseDelay,
+    replyMessages,
+    storyUpdate,
+  });
+
+  // 剧情链分支(仅单聊: 调用方传入 conversation 时生效; 群聊不传)
+  if (input.conversation) {
+    const progress = input.conversation.storyProgress;
+    const chain = progress
+      ? STORY_CHAINS.find((c) => c.id === progress.chainId)
+      : undefined;
+
+    if (progress && chain) {
+      // 剧情进行中: 推进 / 拉回 / 脱离
+      const step = chain.steps[progress.step];
+      const canAdvance =
+        !step.advanceKeywords ||
+        step.advanceKeywords.some((keyword) => userMessage.content.includes(keyword));
+
+      if (canAdvance) {
+        const nextStep = progress.step + 1;
+        if (nextStep < chain.steps.length) {
+          // 推进到下一步
+          storyUpdate = { chainId: chain.id, step: nextStep };
+          return storyPlan([buildStoryReply(chain.steps[nextStep].replies)]);
+        }
+        // 剧情走完: 清除进度, 本次回归普通规则
+        storyUpdate = null;
+      } else if (Math.random() < 0.5) {
+        // 跑题拉回: 重读当前步台词, 进度不变
+        return storyPlan([buildStoryReply(step.replies)]);
+      } else {
+        // 跑题脱离: 清除进度, 走普通规则
+        storyUpdate = null;
+      }
+    } else if (!progress) {
+      // 无进行中剧情: 命中触发词且概率通过则进入剧情
+      const triggered = STORY_CHAINS.find(
+        (c) =>
+          c.contactId === contact.id &&
+          c.triggerKeywords.some((keyword) => userMessage.content.includes(keyword)) &&
+          Math.random() < c.triggerChance
+      );
+      if (triggered) {
+        storyUpdate = { chainId: triggered.id, step: 0 };
+        return storyPlan([buildStoryReply(triggered.steps[0].replies)]);
+      }
+    }
+  }
+
   // 已读不回（@提及时必回，跳过该判定）
   if (!forceReply && Math.random() < behavior.readButNoReplyChance) {
     return {
@@ -157,6 +228,7 @@ export function generateReply(input: GenerateReplyInput): ReplyPlan {
       typingDurationMs: 0,
       replyDelayMs: baseDelay,
       replyMessages: [],
+      storyUpdate,
     };
   }
 
@@ -213,5 +285,6 @@ export function generateReply(input: GenerateReplyInput): ReplyPlan {
     replyDelayMs: baseDelay,
     replyMessages,
     usedRuleId,
+    storyUpdate,
   };
 }

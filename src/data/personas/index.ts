@@ -20,3 +20,6 @@ export const PERSONAS: AgentPersona[] = [
   lisaPersona,
   landlordPersona,
 ].map((persona) => ({ ...persona, version: PERSONA_VERSION }));
+
+// 剧情链数据(详见 storyChains.ts)
+export { STORY_CHAINS } from './storyChains';
