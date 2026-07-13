@@ -91,6 +91,9 @@ describe('useChatStore 群聊调度', () => {
       c.persona.behavior.groupReplyChance = 0;
     });
     const family = groupOf('幸福一家人');
+    // timeScale=1 拉开 150ms 状态窗口: timeScale=0 时 0ms 定时器可能在
+    // sendMessage 的 await 链期间就触发, 中间态 sending 无法稳定观测
+    useChatStore.getState().setReplyTimeScale(1);
 
     await useChatStore.getState().sendMessage(family.id, '测试状态');
     const userMessage = useChatStore

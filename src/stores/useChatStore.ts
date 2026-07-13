@@ -11,6 +11,17 @@ function escapeRegExp(text: string): string {
   return text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
+// session 级防重复状态: 放模块级而非 Zustand state(避免写入时触发重渲染),
+// 页面刷新自然清零; 引擎选取台词时跳过已用, 并直接写入这两个集合
+const sessionUsedResponses = new Set<string>();
+const sessionRuleUsage = new Map<string, number>();
+
+// 测试用: 重置 session 防重复状态
+export function __resetSessionState(): void {
+  sessionUsedResponses.clear();
+  sessionRuleUsage.clear();
+}
+
 // 解析消息中的 @成员：最长昵称优先，要求 @名字 后是空格/标点/结尾（边界匹配）
 export function parseMentions(content: string, members: Contact[]): Contact[] {
   const sorted = [...members].sort((a, b) => b.name.length - a.name.length);
@@ -156,9 +167,12 @@ async function scheduleGroupReplies(userMessage: Message, conversation: Conversa
   }, 300 * timeScale);
 
   const memberIds = conversation.memberIds ?? [];
-  const members = (await db.contacts.bulkGet(memberIds)).filter(
-    (c): c is Contact => c !== undefined
-  );
+  // 并行取数: 不增加 await 链长度, 避免改变状态流转的时序语义
+  const [memberResults, me] = await Promise.all([
+    db.contacts.bulkGet(memberIds),
+    db.me.get('me'),
+  ]);
+  const members = memberResults.filter((c): c is Contact => c !== undefined);
 
   // @提及必回；无 @ 时每人按人设 groupReplyChance 独立判定
   const mentioned = parseMentions(userMessage.content, members);
@@ -177,7 +191,13 @@ async function scheduleGroupReplies(userMessage: Message, conversation: Conversa
       contact: member,
       userMessage,
       recentMessages,
-      options: { timeScale, forceReply: mentioned.length > 0 },
+      options: {
+        timeScale,
+        forceReply: mentioned.length > 0,
+        sessionUsedResponses,
+        sessionRuleUsage,
+        userNickname: me?.nickname,
+      },
     });
     const startAt = cursor + plan.replyDelayMs;
 
@@ -303,9 +323,13 @@ export const useChatStore = create<ChatState>((set) => ({
         return;
       }
 
-      const contact = conversation.contactId
-        ? await db.contacts.get(conversation.contactId)
-        : undefined;
+      // 并行取数: 不增加 await 链长度, 避免改变状态流转的时序语义
+      const [contact, me] = await Promise.all([
+        conversation.contactId
+          ? db.contacts.get(conversation.contactId)
+          : Promise.resolve(undefined),
+        db.me.get('me'),
+      ]);
       if (!contact) return;
 
       const timeScale = useChatStore.getState().replyTimeScale;
@@ -314,7 +338,12 @@ export const useChatStore = create<ChatState>((set) => ({
         contact,
         userMessage: message,
         recentMessages,
-        options: { timeScale },
+        options: {
+          timeScale,
+          sessionUsedResponses,
+          sessionRuleUsage,
+          userNickname: me?.nickname,
+        },
       });
 
       scheduleStatusFlow(message, plan);

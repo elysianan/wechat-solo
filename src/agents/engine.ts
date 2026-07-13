@@ -15,26 +15,34 @@ function pickRandom<T>(arr: T[]): T {
   return arr[Math.floor(Math.random() * arr.length)];
 }
 
-// 判断规则是否命中用户消息
-// context 是门槛条件: 规则声明了 context 时, 最近 5 条消息必须含任一 context 关键词;
-// 若规则只有 context 没有 keywords/patterns, 门槛通过即命中
-function matchesRule(rule: ReplyRule, content: string, recentContents: string[]): boolean {
+// 判断规则是否命中，返回命中的关键词：
+// null = 未命中；'' = 命中但无具体关键词(纯 context / 正则 / default)；非空 = 命中的关键词
+// context 是门槛条件: 声明了 context 时, 最近 5 条消息必须含任一 context 关键词
+function matchKeyword(rule: ReplyRule, content: string, recentContents: string[]): string | null {
   if (rule.triggers.context && rule.triggers.context.length > 0) {
     const contextText = recentContents.slice(-5).join(' ');
     if (!rule.triggers.context.some((keyword) => contextText.includes(keyword))) {
-      return false;
+      return null;
     }
+    // 规则只有 context 没有 keywords/patterns 时, 门槛通过即命中
     if (!rule.triggers.keywords && !rule.triggers.patterns) {
-      return true;
+      return '';
     }
   }
-  if (rule.triggers.keywords?.some((keyword) => content.includes(keyword))) {
-    return true;
+  const keyword = rule.triggers.keywords?.find((k) => content.includes(k));
+  if (keyword !== undefined) {
+    return keyword;
   }
   if (rule.triggers.patterns?.some((pattern) => pattern.test(content))) {
-    return true;
+    return '';
   }
-  return false;
+  return null;
+}
+
+// 规则匹配结果
+interface RuleMatch {
+  rule: ReplyRule;
+  keyword: string; // '' 表示命中但无具体关键词
 }
 
 // 按 weight 加权随机选一条规则
@@ -53,13 +61,27 @@ function selectWeightedRule(rules: ReplyRule[]): ReplyRule {
   return rules[rules.length - 1];
 }
 
-// 选择回复规则：先按时段过滤, 再匹配关键词/context, 无命中则兜底 default
+// 加权随机选一个匹配结果
+function selectWeightedMatch(matches: RuleMatch[]): RuleMatch {
+  const totalWeight = matches.reduce((sum, match) => sum + match.rule.weight, 0);
+  let random = Math.random() * totalWeight;
+  for (const match of matches) {
+    random -= match.rule.weight;
+    if (random <= 0) {
+      return match;
+    }
+  }
+  return matches[matches.length - 1];
+}
+
+// 选择回复规则：时段过滤 → maxUsage 剔除 → 关键词/context 匹配 → 兜底 default
 function selectRule(
   rules: ReplyRule[],
   content: string,
   recentContents: string[],
-  now: number
-): ReplyRule | undefined {
+  now: number,
+  sessionRuleUsage?: Map<string, number>
+): RuleMatch | undefined {
   if (rules.length === 0) {
     return undefined;
   }
@@ -68,13 +90,43 @@ function selectRule(
   const inWindow = rules.filter(
     (rule) => !rule.triggers.timeWindow || rule.triggers.timeWindow.includes(currentWindow)
   );
-  const matched = inWindow.filter((rule) => matchesRule(rule, content, recentContents));
-  const candidates = matched.length > 0 ? matched : inWindow.filter((rule) => rule.triggers.default);
-  if (candidates.length === 0) {
-    // 时段过滤后无兜底时回退到过滤前的最后一条, 保证引擎不崩溃
-    return inWindow.length > 0 ? inWindow[inWindow.length - 1] : rules[rules.length - 1];
+  // maxUsageInSession 用尽的规则剔除; 全部用尽时回退到不过滤, 保证有回复
+  const available = inWindow.filter((rule) => {
+    if (rule.maxUsageInSession === undefined) {
+      return true;
+    }
+    return (sessionRuleUsage?.get(rule.id) ?? 0) < rule.maxUsageInSession;
+  });
+  const pool = available.length > 0 ? available : inWindow;
+
+  const matched: RuleMatch[] = [];
+  for (const rule of pool) {
+    const keyword = matchKeyword(rule, content, recentContents);
+    if (keyword !== null) {
+      matched.push({ rule, keyword });
+    }
   }
-  return selectWeightedRule(candidates);
+  if (matched.length > 0) {
+    return selectWeightedMatch(matched);
+  }
+  const defaults = pool.filter((rule) => rule.triggers.default);
+  if (defaults.length > 0) {
+    return { rule: selectWeightedRule(defaults), keyword: '' };
+  }
+  // 终极兜底: 回退到最后一条, 保证引擎不崩溃
+  const fallback = pool.length > 0 ? pool[pool.length - 1] : rules[rules.length - 1];
+  return { rule: fallback, keyword: '' };
+}
+
+// 选取台词: 跳过 session 已用过的(按原文比对); 全部用过则回退全集
+function pickResponse(responses: string[], usedResponses?: Set<string>): string {
+  const pool = responses.filter((response) => !usedResponses?.has(response));
+  return pickRandom(pool.length > 0 ? pool : responses);
+}
+
+// 模板替换: {keyword} → 命中关键词(无则空串), {nickname} → 用户昵称
+function applyTemplate(text: string, keyword: string, nickname: string): string {
+  return text.replace(/\{keyword\}/g, keyword).replace(/\{nickname\}/g, nickname);
 }
 
 // 根据联系人的人设生成回复计划
@@ -111,22 +163,44 @@ export function generateReply(input: GenerateReplyInput): ReplyPlan {
   // 选择规则与回复文本
   const now = options?.now ?? Date.now();
   const recentContents = recentMessages.map((message) => message.content);
-  const rule = selectRule(contact.persona.rules, userMessage.content, recentContents, now);
+  const match = selectRule(
+    contact.persona.rules,
+    userMessage.content,
+    recentContents,
+    now,
+    options?.sessionRuleUsage
+  );
   const replyMessages: Array<{ content: string }> = [];
-  if (rule) {
-    const firstResponse = pickRandom(rule.responses);
-    replyMessages.push({ content: firstResponse });
+  let usedRuleId: string | undefined;
 
-    // 按概率追加第二条消息，避免与第一条完全相同
+  if (match) {
+    const { rule, keyword } = match;
+    usedRuleId = rule.id;
+    const nickname = options?.userNickname ?? '我';
+
+    const firstRaw = pickResponse(rule.responses, options?.sessionUsedResponses);
+    replyMessages.push({ content: applyTemplate(firstRaw, keyword, nickname) });
+
+    // 按概率追加第二条消息：避开第一条与 session 已用台词
     if (
       behavior.multiMessageChance > 0 &&
       rule.responses.length > 1 &&
       Math.random() < behavior.multiMessageChance
     ) {
-      const remainingResponses = rule.responses.filter((response) => response !== firstResponse);
-      if (remainingResponses.length > 0) {
-        replyMessages.push({ content: pickRandom(remainingResponses) });
+      const remaining = rule.responses.filter(
+        (response) => response !== firstRaw && !options?.sessionUsedResponses?.has(response)
+      );
+      const secondPool =
+        remaining.length > 0 ? remaining : rule.responses.filter((response) => response !== firstRaw);
+      if (secondPool.length > 0) {
+        replyMessages.push({ content: applyTemplate(pickRandom(secondPool), keyword, nickname) });
       }
+    }
+
+    // 更新 session 状态: 直接写入传入的 Set/Map, 调用方无需再记录
+    options?.sessionRuleUsage?.set(rule.id, (options.sessionRuleUsage.get(rule.id) ?? 0) + 1);
+    for (const message of replyMessages) {
+      options?.sessionUsedResponses?.add(message.content);
     }
   }
 
@@ -138,5 +212,6 @@ export function generateReply(input: GenerateReplyInput): ReplyPlan {
     typingDurationMs: typingDuration,
     replyDelayMs: baseDelay,
     replyMessages,
+    usedRuleId,
   };
 }
