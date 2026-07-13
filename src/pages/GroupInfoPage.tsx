@@ -2,6 +2,7 @@ import { Header } from '../components/common/Header';
 import { useAppStore } from '../stores/useAppStore';
 import { useChatStore } from '../stores/useChatStore';
 import { useContactStore } from '../stores/useContactStore';
+import { assetUrl } from '../utils/asset';
 
 // 群资料页：成员头像网格 + 群名称
 export function GroupInfoPage() {
@@ -35,7 +36,7 @@ export function GroupInfoPage() {
           data-testid="group-member-me"
         >
           <img
-            src={me?.avatar}
+            src={assetUrl(me?.avatar)}
             alt={me?.nickname}
             className="w-12 h-12 rounded-md bg-wechat-bg object-cover"
           />
@@ -51,7 +52,7 @@ export function GroupInfoPage() {
             data-testid={`group-member-${member.id}`}
           >
             <img
-              src={member.avatar}
+              src={assetUrl(member.avatar)}
               alt={member.name}
               className="w-12 h-12 rounded-md bg-wechat-bg object-cover"
             />

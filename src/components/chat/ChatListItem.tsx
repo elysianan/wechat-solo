@@ -1,4 +1,5 @@
 import { formatChatTime } from '../../utils/time';
+import { assetUrl } from '../../utils/asset';
 
 interface ChatListItemProps {
   avatar: string;
@@ -27,7 +28,7 @@ export function ChatListItem({
       data-testid="chat-list-item"
     >
       <div className="relative">
-        <img src={avatar} alt={name} className="w-12 h-12 rounded-md bg-gray-200 object-cover" />
+        <img src={assetUrl(avatar)} alt={name} className="w-12 h-12 rounded-md bg-gray-200 object-cover" />
         {isPinned && (
           <div className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full" data-testid="pinned-dot" />
         )}

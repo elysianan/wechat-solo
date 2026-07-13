@@ -1,4 +1,5 @@
 import type { Contact } from '../../types';
+import { assetUrl } from '../../utils/asset';
 
 interface ContactListSectionProps {
   letter: string;
@@ -21,7 +22,7 @@ export function ContactListSection({ letter, contacts, onContactClick }: Contact
             className="w-full flex items-center px-4 py-3 border-b border-wechat-divider last:border-b-0 active:bg-wechat-bg"
             data-testid="contact-list-item"
           >
-            <img src={contact.avatar} alt={contact.name} className="w-10 h-10 rounded-md bg-gray-200 object-cover" />
+            <img src={assetUrl(contact.avatar)} alt={contact.name} className="w-10 h-10 rounded-md bg-gray-200 object-cover" />
             <span className="ml-3 text-base text-wechat-text-primary">{contact.name}</span>
           </button>
         ))}

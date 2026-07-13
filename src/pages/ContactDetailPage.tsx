@@ -2,6 +2,7 @@ import { Header } from '../components/common/Header';
 import { useAppStore } from '../stores/useAppStore';
 import { useContactStore } from '../stores/useContactStore';
 import { useChatStore } from '../stores/useChatStore';
+import { assetUrl } from '../utils/asset';
 
 // 好友资料页：只读展示联系人信息，并支持一键跳转聊天
 export function ContactDetailPage() {
@@ -39,7 +40,7 @@ export function ContactDetailPage() {
         {/* 头像与基础信息 */}
         <div className="bg-wechat-card mt-2 px-4 py-4 flex items-center">
           <img
-            src={contact.avatar}
+            src={assetUrl(contact.avatar)}
             alt={contact.name}
             className="w-16 h-16 rounded-md bg-gray-200 object-cover"
           />

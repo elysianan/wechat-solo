@@ -4,6 +4,7 @@ import { MenuListItem } from '../components/me/MenuListItem';
 import { WeChatToast } from '../components/common/WeChatToast';
 import { useAppStore } from '../stores/useAppStore';
 import { useContactStore } from '../stores/useContactStore';
+import { assetUrl } from '../utils/asset';
 
 // 「我」页面：个人信息卡 + 菜单分组
 export function MePage() {
@@ -22,7 +23,7 @@ export function MePage() {
         data-testid="me-profile-card"
       >
         <img
-          src={me?.avatar}
+          src={assetUrl(me?.avatar)}
           alt={me?.nickname}
           className="w-16 h-16 rounded-md object-cover bg-wechat-bg"
         />

@@ -1,5 +1,6 @@
 import { ChevronLeft } from 'lucide-react';
 import type { Me } from '../../types';
+import { assetUrl } from '../../utils/asset';
 
 interface MomentCoverHeaderProps {
   me: Me | null;
@@ -22,7 +23,7 @@ export function MomentCoverHeader({ me, onBack }: MomentCoverHeaderProps) {
         <div className="absolute bottom-0 right-4 translate-y-1/2 flex items-end gap-3">
           <span className="text-white text-base font-medium drop-shadow mb-2">{me.nickname}</span>
           <img
-            src={me.avatar}
+            src={assetUrl(me.avatar)}
             alt={me.nickname}
             className="w-16 h-16 rounded-md bg-gray-200 border-2 border-white object-cover"
           />

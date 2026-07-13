@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Header } from '../components/common/Header';
 import { useAppStore } from '../stores/useAppStore';
 import { useContactStore } from '../stores/useContactStore';
+import { assetUrl } from '../utils/asset';
 
 // 标签详情页：成员管理（增删）、重命名、删除标签
 export function TagDetailPage() {
@@ -109,7 +110,7 @@ export function TagDetailPage() {
             data-testid={`tag-member-${member.id}`}
           >
             <img
-              src={member.avatar}
+              src={assetUrl(member.avatar)}
               alt={member.name}
               className="w-10 h-10 rounded-md bg-wechat-bg object-cover"
             />
@@ -150,7 +151,7 @@ export function TagDetailPage() {
                 data-testid={`tag-candidate-${candidate.id}`}
               >
                 <img
-                  src={candidate.avatar}
+                  src={assetUrl(candidate.avatar)}
                   alt={candidate.name}
                   className="w-10 h-10 rounded-md bg-wechat-bg object-cover"
                 />

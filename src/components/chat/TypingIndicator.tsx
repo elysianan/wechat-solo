@@ -1,3 +1,5 @@
+import { assetUrl } from '../../utils/asset';
+
 interface TypingIndicatorProps {
   avatar: string;
   name: string;
@@ -11,7 +13,7 @@ export function TypingIndicator({ avatar, name }: TypingIndicatorProps) {
       data-testid="typing-indicator"
     >
       <img
-        src={avatar}
+        src={assetUrl(avatar)}
         alt={name}
         className="w-10 h-10 rounded-md bg-gray-200 object-cover mr-3 flex-shrink-0"
       />

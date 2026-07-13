@@ -3,6 +3,7 @@ import { Header } from '../components/common/Header';
 import { useAppStore } from '../stores/useAppStore';
 import { useContactStore } from '../stores/useContactStore';
 import type { Me } from '../types';
+import { assetUrl } from '../utils/asset';
 
 // 可编辑字段定义
 type EditableField = 'nickname' | 'wechatId' | 'region' | 'signature';
@@ -70,7 +71,7 @@ export function ProfileEditPage() {
       <div className="bg-wechat-card flex items-center px-4 py-3 border-b border-wechat-divider">
         <span className="text-base text-wechat-text-primary flex-1">头像</span>
         <img
-          src={me?.avatar}
+          src={assetUrl(me?.avatar)}
           alt="头像"
           className="w-14 h-14 rounded-md object-cover bg-wechat-bg"
         />

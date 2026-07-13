@@ -1,5 +1,6 @@
 import { Check, CheckCheck } from 'lucide-react';
 import type { Message, MessageStatus } from '../../types';
+import { assetUrl } from '../../utils/asset';
 
 interface MessageBubbleProps {
   message: Message;
@@ -34,7 +35,7 @@ export function MessageBubble({ message, isMe, contactName, contactAvatar }: Mes
     >
       {!isMe && (
         <img
-          src={contactAvatar}
+          src={assetUrl(contactAvatar)}
           alt={contactName}
           className="w-10 h-10 rounded-md bg-gray-200 object-cover mr-3 flex-shrink-0"
         />
