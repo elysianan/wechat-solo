@@ -6,7 +6,7 @@ import { useSettingsStore } from '../../stores/useSettingsStore';
 
 describe('关于页', () => {
   beforeEach(() => {
-    useSettingsStore.setState({ version: '1.4.0-Sprint4' });
+    useSettingsStore.setState({ version: '1.5.0-Sprint5' });
     useAppStore.setState({
       currentTab: 'me',
       pageStack: [{ type: 'tabs' }, { type: 'settings' }, { type: 'about' }],
@@ -15,7 +15,7 @@ describe('关于页', () => {
 
   it('展示版本号', () => {
     render(<AboutPage />);
-    expect(screen.getByTestId('about-version')).toHaveTextContent('1.4.0-Sprint4');
+    expect(screen.getByTestId('about-version')).toHaveTextContent('1.5.0-Sprint5');
   });
 
   it('展示项目说明', () => {

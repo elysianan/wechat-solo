@@ -1,4 +1,4 @@
-import type { Me, Contact, Conversation, Message, Moment, AgentPersona } from '../types';
+import type { Me, Contact, Conversation, Message, Moment, AgentPersona, Tag } from '../types';
 import { makeId } from '../utils/id';
 
 export const seedMe: Me = {
@@ -36,6 +36,7 @@ export const seedPersonas: AgentPersona[] = [
       readButNoReplyChance: 0.05,
       multiMessageChance: 0.3,
       emojiChance: 0.6,
+      groupReplyChance: 0.7,
     },
     rules: [
       {
@@ -84,6 +85,7 @@ export const seedPersonas: AgentPersona[] = [
       readButNoReplyChance: 0.1,
       multiMessageChance: 0,
       emojiChance: 0,
+      groupReplyChance: 0.15,
     },
     rules: [
       {
@@ -123,6 +125,7 @@ export const seedPersonas: AgentPersona[] = [
       readButNoReplyChance: 0.05,
       multiMessageChance: 0.4,
       emojiChance: 0.7,
+      groupReplyChance: 0.85,
     },
     rules: [
       {
@@ -171,6 +174,7 @@ export const seedPersonas: AgentPersona[] = [
       readButNoReplyChance: 0.15,
       multiMessageChance: 0.1,
       emojiChance: 0.4,
+      groupReplyChance: 0.25,
     },
     rules: [
       {
@@ -218,6 +222,7 @@ export const seedPersonas: AgentPersona[] = [
       readButNoReplyChance: 0.1,
       multiMessageChance: 0,
       emojiChance: 0.1,
+      groupReplyChance: 0.3,
     },
     rules: [
       {
@@ -316,6 +321,120 @@ export const seedMessages: Message[] = seedContacts.flatMap((contact) => {
 });
 
 assignLastMessageIds(seedConversations, seedMessages);
+
+// 群聊会话种子：幸福一家人（我 + 王阿姨）、产品研发群（我 + 张总 + Lisa + 阿杰）
+export const seedGroupConversations: Conversation[] = [
+  {
+    id: 'conv-group-family',
+    type: 'group',
+    name: '幸福一家人',
+    avatar: '/avatar-group-family.svg',
+    memberIds: ['mom'],
+    lastMessageId: '',
+    unreadCount: 0,
+    isPinned: false,
+    isMuted: false,
+    updatedAt: BASE_TIME - 1000 * 60 * 20,
+  },
+  {
+    id: 'conv-group-work',
+    type: 'group',
+    name: '产品研发群',
+    avatar: '/avatar-group-work.svg',
+    memberIds: ['boss', 'lisa', 'buddy'],
+    lastMessageId: '',
+    unreadCount: 1,
+    isPinned: false,
+    isMuted: false,
+    updatedAt: BASE_TIME - 1000 * 60 * 5,
+  },
+];
+
+// 群聊历史消息种子
+export const seedGroupMessages: Message[] = [
+  {
+    id: makeId('msg'),
+    conversationId: 'conv-group-family',
+    senderId: 'mom',
+    type: 'text',
+    content: '晚上回家吃饭吗？',
+    status: 'read',
+    createdAt: BASE_TIME - 1000 * 60 * 60,
+  },
+  {
+    id: makeId('msg'),
+    conversationId: 'conv-group-family',
+    senderId: 'me',
+    type: 'text',
+    content: '回，大概七点到。',
+    status: 'read',
+    createdAt: BASE_TIME - 1000 * 60 * 50,
+  },
+  {
+    id: makeId('msg'),
+    conversationId: 'conv-group-family',
+    senderId: 'mom',
+    type: 'text',
+    content: '好，给你炖了汤，路上慢点。',
+    status: 'read',
+    createdAt: BASE_TIME - 1000 * 60 * 20,
+  },
+  {
+    id: makeId('msg'),
+    conversationId: 'conv-group-work',
+    senderId: 'boss',
+    type: 'text',
+    content: '本周迭代目标已同步到文档，大家看下。',
+    status: 'read',
+    createdAt: BASE_TIME - 1000 * 60 * 40,
+  },
+  {
+    id: makeId('msg'),
+    conversationId: 'conv-group-work',
+    senderId: 'buddy',
+    type: 'text',
+    content: '收到收到，冲！',
+    status: 'read',
+    createdAt: BASE_TIME - 1000 * 60 * 35,
+  },
+  {
+    id: makeId('msg'),
+    conversationId: 'conv-group-work',
+    senderId: 'lisa',
+    type: 'text',
+    content: '设计稿我晚点更新一版~',
+    status: 'read',
+    createdAt: BASE_TIME - 1000 * 60 * 30,
+  },
+  {
+    id: makeId('msg'),
+    conversationId: 'conv-group-work',
+    senderId: 'me',
+    type: 'text',
+    content: '好的，我先把接口对一下。',
+    status: 'read',
+    createdAt: BASE_TIME - 1000 * 60 * 25,
+  },
+  {
+    id: makeId('msg'),
+    conversationId: 'conv-group-work',
+    senderId: 'boss',
+    type: 'text',
+    content: '下班前对完，有问题群里说。',
+    status: 'delivered',
+    createdAt: BASE_TIME - 1000 * 60 * 5,
+  },
+];
+
+assignLastMessageIds(seedGroupConversations, seedGroupMessages);
+
+// 预置联系人标签（与种子联系人的 tags 对齐）
+export const seedTags: Tag[] = [
+  { id: 'tag-family', name: '家人', createdAt: BASE_TIME },
+  { id: 'tag-colleague', name: '同事', createdAt: BASE_TIME },
+  { id: 'tag-friend', name: '朋友', createdAt: BASE_TIME },
+  { id: 'tag-landlord', name: '房东', createdAt: BASE_TIME },
+];
 
 export const seedMoments: Moment[] = [
   {

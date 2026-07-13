@@ -18,6 +18,7 @@ describe('agents/types re-export', () => {
         readButNoReplyChance: 0.05,
         multiMessageChance: 0.3,
         emojiChance: 0.6,
+        groupReplyChance: 0.5,
       },
       rules: [
         {

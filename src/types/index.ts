@@ -38,6 +38,10 @@ export interface Conversation {
   id: string;
   type: ConversationType;
   contactId?: string;
+  // 群聊专用字段（单聊不填）
+  name?: string;
+  avatar?: string;
+  memberIds?: string[];
   lastMessageId: string;
   unreadCount: number;
   isPinned: boolean;
@@ -78,6 +82,13 @@ export interface AppSettings {
   version: string;
 }
 
+// 联系人标签（独立实体，允许空标签）
+export interface Tag {
+  id: string;
+  name: string;
+  createdAt: number;
+}
+
 // Agent 回复触发条件
 export interface ReplyTrigger {
   keywords?: string[];
@@ -103,6 +114,8 @@ export interface AgentBehavior {
   readButNoReplyChance: number;
   multiMessageChance: number;
   emojiChance: number;
+  // 群内无 @ 时的主动回复概率（按人设差异化）
+  groupReplyChance: number;
 }
 
 // Agent 人设

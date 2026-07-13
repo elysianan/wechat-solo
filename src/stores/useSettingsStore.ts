@@ -18,7 +18,7 @@ const DEFAULT_SETTINGS = {
   darkMode: false,
   soundEnabled: true,
   vibrationEnabled: true,
-  version: '1.4.0-Sprint4',
+  version: '1.5.0-Sprint5',
 };
 
 // 应用设置状态：持久化到 IndexedDB 的 settings 表

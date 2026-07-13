@@ -11,7 +11,7 @@ describe('useSettingsStore', () => {
       darkMode: false,
       soundEnabled: true,
       vibrationEnabled: true,
-      version: '1.4.0-Sprint4',
+      version: '1.5.0-Sprint5',
       loaded: false,
     });
   });
@@ -24,7 +24,7 @@ describe('useSettingsStore', () => {
     expect(state.loaded).toBe(true);
     expect(state.darkMode).toBe(false);
     expect(state.soundEnabled).toBe(true);
-    expect(state.version).toBe('1.4.0-Sprint4');
+    expect(state.version).toBe('1.5.0-Sprint5');
   });
 
   it('数据库无设置时写入默认值', async () => {

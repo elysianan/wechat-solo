@@ -27,6 +27,7 @@ function createContact(overrides?: Partial<Contact>): Contact {
         readButNoReplyChance: 0,
         multiMessageChance: 0,
         emojiChance: 0,
+        groupReplyChance: 0,
       },
       rules: [],
     },

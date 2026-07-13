@@ -30,6 +30,7 @@ describe('core types', () => {
         readButNoReplyChance: 0.05,
         multiMessageChance: 0.3,
         emojiChance: 0.6,
+        groupReplyChance: 0.5,
       },
       rules: [
         {
@@ -81,6 +82,7 @@ describe('core types', () => {
           readButNoReplyChance: 0.05,
           multiMessageChance: 0.3,
           emojiChance: 0.6,
+        groupReplyChance: 0.5,
         },
         rules: [],
       },
