@@ -13,6 +13,10 @@ import { ContactDetailPage } from '../../pages/ContactDetailPage';
 import { DiscoverPage } from '../../pages/DiscoverPage';
 import { MePage } from '../../pages/MePage';
 import { MomentsPage } from '../../pages/MomentsPage';
+import { GroupListPage } from '../../pages/GroupListPage';
+import { GroupInfoPage } from '../../pages/GroupInfoPage';
+import { TagListPage } from '../../pages/TagListPage';
+import { TagDetailPage } from '../../pages/TagDetailPage';
 
 /**
  * 页面滚动布局契约测试
@@ -101,5 +105,34 @@ describe('页面滚动布局契约', () => {
     const content = screen.getByTestId('contact-detail-scroll');
     expect(content.className).toContain('overflow-y-auto');
     expect(content.className).toContain('min-h-0');
+  });
+
+  it('群聊列表页根容器可滚动', () => {
+    useAppStore.setState({ pageStack: [{ type: 'tabs' }, { type: 'group-list' }] });
+    render(<GroupListPage />);
+    expectRootScrollable('group-list-page');
+  });
+
+  it('群资料页根容器可滚动', () => {
+    const group = useChatStore
+      .getState()
+      .conversations.find((c) => c.type === 'group')!;
+    useAppStore.setState({
+      pageStack: [{ type: 'tabs' }, { type: 'group-info', conversationId: group.id }],
+    });
+    render(<GroupInfoPage />);
+    expectRootScrollable('group-info-page');
+  });
+
+  it('标签列表页根容器可滚动', () => {
+    useAppStore.setState({ pageStack: [{ type: 'tabs' }, { type: 'tag-list' }] });
+    render(<TagListPage />);
+    expectRootScrollable('tag-list-page');
+  });
+
+  it('标签详情页根容器可滚动', () => {
+    useAppStore.setState({ pageStack: [{ type: 'tabs' }, { type: 'tag-detail', tag: '同事' }] });
+    render(<TagDetailPage />);
+    expectRootScrollable('tag-detail-page');
   });
 });
