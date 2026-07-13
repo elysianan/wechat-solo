@@ -13,6 +13,8 @@ import { SettingsPage } from './pages/SettingsPage';
 import { AboutPage } from './pages/AboutPage';
 import { GroupListPage } from './pages/GroupListPage';
 import { GroupInfoPage } from './pages/GroupInfoPage';
+import { TagListPage } from './pages/TagListPage';
+import { TagDetailPage } from './pages/TagDetailPage';
 import { MePage } from './pages/MePage';
 import { useAppStore } from './stores/useAppStore';
 import { useContactStore } from './stores/useContactStore';
@@ -84,6 +86,8 @@ function App() {
           {topRoute.type === 'about' && <AboutPage />}
           {topRoute.type === 'group-list' && <GroupListPage />}
           {topRoute.type === 'group-info' && <GroupInfoPage />}
+          {topRoute.type === 'tag-list' && <TagListPage />}
+          {topRoute.type === 'tag-detail' && <TagDetailPage />}
         </div>
 
         {/* 底部水印 */}

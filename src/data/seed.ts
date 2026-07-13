@@ -430,10 +430,10 @@ assignLastMessageIds(seedGroupConversations, seedGroupMessages);
 
 // 预置联系人标签（与种子联系人的 tags 对齐）
 export const seedTags: Tag[] = [
-  { id: 'tag-family', name: '家人', createdAt: BASE_TIME },
-  { id: 'tag-colleague', name: '同事', createdAt: BASE_TIME },
-  { id: 'tag-friend', name: '朋友', createdAt: BASE_TIME },
-  { id: 'tag-landlord', name: '房东', createdAt: BASE_TIME },
+  { id: 'tag-family', name: '家人', createdAt: BASE_TIME + 1 },
+  { id: 'tag-colleague', name: '同事', createdAt: BASE_TIME + 2 },
+  { id: 'tag-friend', name: '朋友', createdAt: BASE_TIME + 3 },
+  { id: 'tag-landlord', name: '房东', createdAt: BASE_TIME + 4 },
 ];
 
 export const seedMoments: Moment[] = [
