@@ -10,7 +10,11 @@ export type PageRoute =
   | { type: 'profile-edit' }
   | { type: 'pay' }
   | { type: 'settings' }
-  | { type: 'about' };
+  | { type: 'about' }
+  | { type: 'group-info'; conversationId: string }
+  | { type: 'group-list' }
+  | { type: 'tag-list' }
+  | { type: 'tag-detail'; tag: string };
 
 interface AppState {
   currentTab: Tab;
@@ -25,6 +29,10 @@ interface AppState {
   navigateToPay: () => void;
   navigateToSettings: () => void;
   navigateToAbout: () => void;
+  navigateToGroupInfo: (conversationId: string) => void;
+  navigateToGroupList: () => void;
+  navigateToTagList: () => void;
+  navigateToTagDetail: (tag: string) => void;
   navigateBackToTabs: () => void;
 }
 
@@ -78,6 +86,26 @@ export const useAppStore = create<AppState>((set) => ({
   navigateToAbout: () =>
     set((state) => ({
       pageStack: [...state.pageStack, { type: 'about' }],
+    })),
+
+  navigateToGroupInfo: (conversationId) =>
+    set((state) => ({
+      pageStack: [...state.pageStack, { type: 'group-info', conversationId }],
+    })),
+
+  navigateToGroupList: () =>
+    set((state) => ({
+      pageStack: [...state.pageStack, { type: 'group-list' }],
+    })),
+
+  navigateToTagList: () =>
+    set((state) => ({
+      pageStack: [...state.pageStack, { type: 'tag-list' }],
+    })),
+
+  navigateToTagDetail: (tag) =>
+    set((state) => ({
+      pageStack: [...state.pageStack, { type: 'tag-detail', tag }],
     })),
 
   navigateBackToTabs: () => set({ pageStack: [{ type: 'tabs' }] }),

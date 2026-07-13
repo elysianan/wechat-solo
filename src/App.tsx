@@ -11,6 +11,8 @@ import { ProfileEditPage } from './pages/ProfileEditPage';
 import { PayPage } from './pages/PayPage';
 import { SettingsPage } from './pages/SettingsPage';
 import { AboutPage } from './pages/AboutPage';
+import { GroupListPage } from './pages/GroupListPage';
+import { GroupInfoPage } from './pages/GroupInfoPage';
 import { MePage } from './pages/MePage';
 import { useAppStore } from './stores/useAppStore';
 import { useContactStore } from './stores/useContactStore';
@@ -80,6 +82,8 @@ function App() {
           {topRoute.type === 'pay' && <PayPage />}
           {topRoute.type === 'settings' && <SettingsPage />}
           {topRoute.type === 'about' && <AboutPage />}
+          {topRoute.type === 'group-list' && <GroupListPage />}
+          {topRoute.type === 'group-info' && <GroupInfoPage />}
         </div>
 
         {/* 底部水印 */}

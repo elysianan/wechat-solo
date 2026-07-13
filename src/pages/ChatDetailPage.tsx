@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react';
+import { Users } from 'lucide-react';
 import { Header } from '../components/common/Header';
 import { MessageBubble } from '../components/chat/MessageBubble';
 import { MessageInput } from '../components/chat/MessageInput';
@@ -17,6 +18,7 @@ export function ChatDetailPage() {
     return top?.type === 'chat-detail' ? top.conversationId : null;
   });
   const navigateBack = useAppStore((state) => state.navigateBackToTabs);
+  const navigateToGroupInfo = useAppStore((state) => state.navigateToGroupInfo);
   const messages = useChatStore((state) =>
     conversationId ? state.messages[conversationId] ?? EMPTY_MESSAGES : EMPTY_MESSAGES
   );
@@ -60,7 +62,21 @@ export function ChatDetailPage() {
 
   return (
     <div className="h-full bg-wechat-bg flex flex-col" data-testid="chat-detail-page">
-      <Header title={title} onBack={navigateBack} />
+      <Header
+        title={title}
+        onBack={navigateBack}
+        right={
+          isGroup ? (
+            <button
+              onClick={() => navigateToGroupInfo(conversationId)}
+              className="text-wechat-text-primary"
+              data-testid="group-info-button"
+            >
+              <Users size={20} />
+            </button>
+          ) : undefined
+        }
+      />
       <div className="flex-1 min-h-0 overflow-y-auto pb-24" data-testid="chat-message-list">
         {messages.map((message) => {
           const sender = senderOf(message.senderId);
