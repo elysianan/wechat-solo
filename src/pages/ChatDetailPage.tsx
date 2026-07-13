@@ -82,7 +82,16 @@ export function ChatDetailPage() {
         )}
         <div ref={bottomRef} />
       </div>
-      <MessageInput onSend={(text) => sendMessage(conversationId, text)} />
+      <MessageInput
+        onSend={(text) => sendMessage(conversationId, text)}
+        members={
+          isGroup
+            ? contacts
+                .filter((c) => conversation.memberIds?.includes(c.id))
+                .map((c) => ({ id: c.id, name: c.name }))
+            : undefined
+        }
+      />
     </div>
   );
 }
