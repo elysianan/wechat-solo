@@ -16,7 +16,7 @@ export function SettingsPage() {
   const setVibrationEnabled = useSettingsStore((state) => state.setVibrationEnabled);
 
   return (
-    <div className="min-h-screen bg-wechat-bg" data-testid="settings-page">
+    <div className="h-full overflow-y-auto bg-wechat-bg" data-testid="settings-page">
       <Header title="设置" onBack={popPage} />
 
       {/* 通用 */}

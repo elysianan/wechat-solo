@@ -101,7 +101,7 @@ export function ContactsPage() {
   };
 
   return (
-    <div className="relative min-h-screen bg-wechat-bg pb-16" data-testid="contacts-page">
+    <div className="relative h-full overflow-y-auto bg-wechat-bg pb-16" data-testid="contacts-page">
       <Header title="通讯录" />
       <div className="sticky top-12 z-10 px-3 py-2 bg-wechat-bg">
         <input

@@ -9,7 +9,7 @@ export function AboutPage() {
   const version = useSettingsStore((state) => state.version);
 
   return (
-    <div className="min-h-screen bg-wechat-bg" data-testid="about-page">
+    <div className="h-full overflow-y-auto bg-wechat-bg" data-testid="about-page">
       <Header title="关于 WeChat Solo" onBack={popPage} />
 
       <div className="flex flex-col items-center pt-16">

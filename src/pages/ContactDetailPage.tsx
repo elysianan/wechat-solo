@@ -33,9 +33,9 @@ export function ContactDetailPage() {
   };
 
   return (
-    <div className="min-h-screen bg-wechat-bg flex flex-col" data-testid="contact-detail-page">
+    <div className="h-full bg-wechat-bg flex flex-col" data-testid="contact-detail-page">
       <Header title="详细资料" onBack={popPage} />
-      <div className="flex-1">
+      <div className="flex-1 min-h-0 overflow-y-auto" data-testid="contact-detail-scroll">
         {/* 头像与基础信息 */}
         <div className="bg-wechat-card mt-2 px-4 py-4 flex items-center">
           <img

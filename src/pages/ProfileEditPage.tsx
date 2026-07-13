@@ -34,7 +34,7 @@ export function ProfileEditPage() {
   // 编辑模式：单字段输入页
   if (editing) {
     return (
-      <div className="min-h-screen bg-wechat-bg" data-testid="profile-edit-field">
+      <div className="h-full overflow-y-auto bg-wechat-bg" data-testid="profile-edit-field">
         <Header
           title={fieldLabels[editing.field]}
           onBack={() => setEditing(null)}
@@ -63,7 +63,7 @@ export function ProfileEditPage() {
 
   // 列表模式
   return (
-    <div className="min-h-screen bg-wechat-bg" data-testid="profile-edit-page">
+    <div className="h-full overflow-y-auto bg-wechat-bg" data-testid="profile-edit-page">
       <Header title="个人信息" onBack={popPage} />
 
       {/* 头像：只读 */}

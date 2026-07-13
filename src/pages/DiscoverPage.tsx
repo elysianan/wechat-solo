@@ -47,7 +47,7 @@ export function DiscoverPage() {
   };
 
   return (
-    <div className="min-h-screen bg-wechat-bg pb-16" data-testid="discover-page">
+    <div className="h-full overflow-y-auto bg-wechat-bg pb-16" data-testid="discover-page">
       <Header title="发现" />
       {groups.map((group, groupIndex) => (
         <div

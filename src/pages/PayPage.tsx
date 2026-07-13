@@ -20,7 +20,7 @@ export function PayPage() {
   const [toastVisible, setToastVisible] = useState(false);
 
   return (
-    <div className="min-h-screen bg-wechat-bg" data-testid="pay-page">
+    <div className="h-full overflow-y-auto bg-wechat-bg" data-testid="pay-page">
       <Header title="支付" onBack={popPage} />
 
       {/* 余额卡片 */}

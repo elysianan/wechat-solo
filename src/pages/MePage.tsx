@@ -14,7 +14,7 @@ export function MePage() {
   const [toastVisible, setToastVisible] = useState(false);
 
   return (
-    <div className="min-h-screen bg-wechat-bg pb-16" data-testid="me-page">
+    <div className="h-full overflow-y-auto bg-wechat-bg pb-16" data-testid="me-page">
       {/* 个人信息卡：点击进入编辑 */}
       <button
         onClick={navigateToProfileEdit}

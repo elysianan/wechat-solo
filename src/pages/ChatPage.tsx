@@ -42,7 +42,7 @@ export function ChatPage() {
   }, [messages]);
 
   return (
-    <div className="min-h-screen bg-wechat-bg pb-16" data-testid="chat-page">
+    <div className="h-full overflow-y-auto bg-wechat-bg pb-16" data-testid="chat-page">
       <Header title="微信" />
       <div className="divide-y divide-wechat-divider">
         {sortedConversations.map((conversation) => {
