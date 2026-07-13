@@ -9,6 +9,7 @@ import {
   seedGroupMessages,
   seedTags,
 } from '../data/seed';
+import { PERSONAS, PERSONA_VERSION } from '../data/personas';
 
 export async function initializeDatabase(): Promise<void> {
   const contactCount = await db.contacts.count();
@@ -49,5 +50,22 @@ export async function initializeDatabase(): Promise<void> {
   const tagCount = await db.tags.count();
   if (tagCount === 0) {
     await db.tags.bulkAdd(seedTags);
+  }
+
+  // persona 规则库升级: 版本不一致(旧数据缺失 version 视为 0)时按 id 重写 persona,
+  // 只改 persona 字段, 消息/会话/标签/朋友圈数据一律不动
+  const outdatedCount = await db.contacts
+    .filter((contact) => (contact.persona.version ?? 0) !== PERSONA_VERSION)
+    .count();
+  if (outdatedCount > 0) {
+    await db.contacts.toCollection().modify((contact) => {
+      if ((contact.persona.version ?? 0) === PERSONA_VERSION) {
+        return;
+      }
+      const persona = PERSONAS.find((p) => p.id === contact.id);
+      if (persona) {
+        contact.persona = persona;
+      }
+    });
   }
 }

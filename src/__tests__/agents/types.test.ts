@@ -11,6 +11,9 @@ describe('agents/types re-export', () => {
       region: '中国',
       signature: '家和万事兴',
       tags: ['家人'],
+      version: 2,
+      initiateChance: 1,
+      initiateTopics: [],
       behavior: {
         replyDelayMin: 1000,
         replyDelayMax: 3000,

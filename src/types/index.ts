@@ -127,6 +127,12 @@ export interface AgentPersona {
   region: string;
   signature: string;
   tags: string[];
+  // 规则库版本: 与 PERSONA_VERSION 一致; 旧数据缺失或偏低时触发升级重写
+  version: number;
+  // 主动发起对话的相对权重(加权随机选人用)
+  initiateChance: number;
+  // 主动发起对话的话题池
+  initiateTopics: string[];
   behavior: AgentBehavior;
   rules: ReplyRule[];
 }
