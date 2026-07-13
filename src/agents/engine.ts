@@ -249,8 +249,10 @@ export function generateReply(input: GenerateReplyInput): ReplyPlan {
     const { rule, keyword } = match;
     usedRuleId = rule.id;
     const nickname = options?.userNickname ?? '我';
+    const usedRaws: string[] = [];
 
     const firstRaw = pickResponse(rule.responses, options?.sessionUsedResponses);
+    usedRaws.push(firstRaw);
     replyMessages.push({ content: applyTemplate(firstRaw, keyword, nickname) });
 
     // 按概率追加第二条消息：避开第一条与 session 已用台词
@@ -265,12 +267,18 @@ export function generateReply(input: GenerateReplyInput): ReplyPlan {
       const secondPool =
         remaining.length > 0 ? remaining : rule.responses.filter((response) => response !== firstRaw);
       if (secondPool.length > 0) {
-        replyMessages.push({ content: applyTemplate(pickRandom(secondPool), keyword, nickname) });
+        const secondRaw = pickRandom(secondPool);
+        usedRaws.push(secondRaw);
+        replyMessages.push({ content: applyTemplate(secondRaw, keyword, nickname) });
       }
     }
 
     // 更新 session 状态: 直接写入传入的 Set/Map, 调用方无需再记录
+    // 同时记录原文(防同一模板重复选取)与最终文本(防跨规则撞文案)
     options?.sessionRuleUsage?.set(rule.id, (options.sessionRuleUsage.get(rule.id) ?? 0) + 1);
+    for (const raw of usedRaws) {
+      options?.sessionUsedResponses?.add(raw);
+    }
     for (const message of replyMessages) {
       options?.sessionUsedResponses?.add(message.content);
     }

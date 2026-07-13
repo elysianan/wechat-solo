@@ -1,6 +1,6 @@
 import type { PersonaDraft } from './index';
 
-// 王阿姨(妈妈): 关心型, 催婚/养生/唠叨
+// 王阿姨(妈妈): 唠叨关心型, 催婚/养生/挂念, emoji 温暖, 打字慢
 export const momPersona: PersonaDraft = {
   id: 'mom',
   name: '王阿姨',
@@ -10,7 +10,15 @@ export const momPersona: PersonaDraft = {
   signature: '家和万事兴',
   tags: ['家人'],
   initiateChance: 6,
-  initiateTopics: [],
+  initiateTopics: [
+    '吃饭了吗？',
+    '天冷了，多穿点衣服。',
+    '看到一篇养生文章，转给你看看。',
+    '这个周末回来吗？',
+    '你爸问你最近怎么样。',
+    '给你寄了点家里做的腊肉，记得收。',
+    '怎么两天没消息了，忙什么呢？',
+  ],
   behavior: {
     replyDelayMin: 1000,
     replyDelayMax: 3000,
@@ -25,9 +33,10 @@ export const momPersona: PersonaDraft = {
       id: 'mom-food',
       triggers: { keywords: ['吃', '饭', '外卖', '饿'] },
       responses: [
-        '吃了吗？别总点外卖，不健康。',
-        '今天有没有好好吃饭？妈妈给你寄点腊肉？',
-        '外卖油太大，自己做点简单的。',
+        '{keyword}了吗？别总对付，胃要紧。',
+        '今天有没有好好吃{keyword}？妈妈给你寄点腊肉？',
+        '外卖油太大，自己煮点粥也好。',
+        '再忙也要按时吃饭，听见没？',
       ],
       weight: 1,
     },
@@ -37,8 +46,157 @@ export const momPersona: PersonaDraft = {
       responses: [
         '今天降温了，记得多穿点衣服，别感冒了。🧣',
         '出门带伞，别淋雨。',
+        '天气{keyword}就加减衣服，别逞强。',
+        '杭州这边也{keyword}了，你那边怎么样？',
       ],
       weight: 1,
+    },
+    {
+      id: 'mom-health',
+      triggers: { keywords: ['身体', '感冒', '发烧', '生病', '难受', '头疼'] },
+      responses: [
+        '{keyword}了？去看医生没有？别硬扛。',
+        '多喝水多休息，{keyword}可不是小事。',
+        '要不要妈妈过去照顾你几天？',
+        '跟你说了多少遍注意身体，就是不听。😤',
+      ],
+      weight: 1.2,
+    },
+    {
+      id: 'mom-work',
+      triggers: { keywords: ['工作', '加班', '忙', '累'] },
+      responses: [
+        '{keyword}归{keyword}，身体是自己的。',
+        '又{keyword}？你们老板也太狠了。',
+        '别太拼，妈妈不指望你挣多少钱，平安就好。',
+        '周末能休息吗？回来妈给你炖汤。',
+      ],
+      weight: 1,
+    },
+    {
+      id: 'mom-night',
+      triggers: { keywords: ['睡', '晚安', '困', '在吗'], timeWindow: ['night'] },
+      responses: [
+        '这么晚还不睡？赶紧躺下去。',
+        '都几点了还在玩手机，眼睛要不要了？',
+        '熬夜最伤身体，快睡，明天再聊。',
+        '{keyword}就赶紧睡，别熬了，晚安。❤️',
+      ],
+      weight: 1.5,
+    },
+    {
+      id: 'mom-morning',
+      triggers: { keywords: ['早安', '早上', '起床', '醒了'], timeWindow: ['morning'] },
+      responses: [
+        '起这么早？吃早饭了吗？',
+        '早上好呀，今天也要元气满满的。☀️',
+        '记得吃早饭，空着肚子上班怎么行。',
+      ],
+      weight: 1.2,
+    },
+    {
+      id: 'mom-marriage',
+      triggers: { keywords: ['对象', '结婚', '单身', '女朋友', '男朋友'] },
+      responses: [
+        '说到{keyword}，你到底上不上心？',
+        '隔壁小李孩子都会叫奶奶了，你呢？',
+        '妈妈也不是催你，就是觉得你该有个伴。',
+        '有合适的就处处看，别总是一个人。',
+      ],
+      weight: 1,
+    },
+    {
+      id: 'mom-home',
+      triggers: { keywords: ['回家', '过年', '春节', '国庆', '放假', '回去'] },
+      responses: [
+        '什么时候{keyword}？妈妈想你了。',
+        '{keyword}提前说，妈给你收拾房间。',
+        '票买了吗？别又拖到最后一刻。',
+        '回来就好，回来妈给你做你最爱吃的。',
+      ],
+      weight: 1.2,
+    },
+    {
+      id: 'mom-money',
+      triggers: { keywords: ['钱', '工资', '花', '买'] },
+      responses: [
+        '钱够不够花？不够跟妈妈说。',
+        '别乱花{keyword}，存一点是一点。',
+        '你自己挣的自己花，妈妈不要你的钱。',
+        '天冷了买件好点的衣服，别舍不得。🧥',
+      ],
+      weight: 0.8,
+    },
+    {
+      id: 'mom-video',
+      triggers: { keywords: ['视频', '电话', '看看', '通话'] },
+      responses: [
+        '晚上有空{keyword}吗？妈妈想看看你。',
+        '好久没见你脸了，瘦没瘦？',
+        '你爸也在旁边，一起聊两句？',
+      ],
+      weight: 0.8,
+    },
+    {
+      id: 'mom-miss',
+      triggers: { keywords: ['想你', '想家', '想'] },
+      responses: [
+        '妈妈也想你，天天都想。❤️',
+        '想{keyword}就回来看看，家门永远开着。',
+        '哎，孩子大了，一年见不了几面。',
+      ],
+      weight: 1.2,
+    },
+    {
+      id: 'mom-compare',
+      triggers: { keywords: ['同事', '朋友', '同学'] },
+      responses: [
+        '你那些{keyword}里，就数你让妈最操心。',
+        '{keyword}都有对象了吧？就你一个人单着。',
+        '别老跟{keyword}比，过好自己的日子。',
+      ],
+      weight: 0.6,
+    },
+    {
+      id: 'mom-photo',
+      triggers: { keywords: ['照片', '胖', '瘦'] },
+      responses: [
+        '看你朋友圈照片，是不是又{keyword}了？',
+        '{keyword}点好看，太瘦妈心疼。',
+        '发张近照给妈妈看看？',
+      ],
+      weight: 0.6,
+    },
+    {
+      id: 'mom-festival',
+      triggers: { keywords: ['中秋', '端午', '冬至', '生日', '元旦'] },
+      responses: [
+        '{keyword}快乐！记得吃点好的。',
+        '{keyword}不回来吗？家里给你留着位子。',
+        '今天{keyword}，妈妈煮了你爱吃的。',
+        '又一年{keyword}了，你在外头要好好的。',
+      ],
+      weight: 1,
+    },
+    {
+      id: 'mom-ctx-marriage-busy',
+      triggers: { keywords: ['忙', '加班', '工作'], context: ['对象', '相亲', '结婚'] },
+      responses: [
+        '再忙也要考虑终身大事，{keyword}不是借口。',
+        '你看你，一说这个就说{keyword}。',
+        '工作能陪你一辈子？{keyword}完了呢？',
+      ],
+      weight: 1.5,
+    },
+    {
+      id: 'mom-ctx-sick-food',
+      triggers: { keywords: ['吃', '饭'], context: ['感冒', '发烧', '生病', '难受'] },
+      responses: [
+        '生着病更要好好吃饭，喝点粥暖暖。',
+        '病号饭妈妈最拿手，可惜不在你身边。',
+        '{keyword}清淡点，别吃辛辣的。',
+      ],
+      weight: 1.5,
     },
     {
       id: 'mom-default',
@@ -47,6 +205,8 @@ export const momPersona: PersonaDraft = {
         '你最近忙不忙？要注意身体。',
         '什么时候回家看看？',
         '妈妈给你转了一篇养生文章，记得看。',
+        '嗯，你自己有数就好。',
+        '有事随时跟妈说，别一个人扛着。❤️',
       ],
       weight: 0.5,
     },

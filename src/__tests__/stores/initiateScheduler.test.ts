@@ -10,9 +10,10 @@ describe('主动发起对话调度器', () => {
     await db.delete();
     await db.open();
     await initializeDatabase();
-    // 只给妈妈注入话题池, 其他联系人话题池为空会被过滤, 确保选人确定
-    await db.contacts.where('id').equals('mom').modify((contact) => {
-      contact.persona.initiateTopics = ['吃饭了吗', '天冷了多穿点'];
+    // 只给妈妈注入话题池, 清空其他联系人话题池, 确保加权选人确定落在妈妈
+    await db.contacts.toCollection().modify((contact) => {
+      contact.persona.initiateTopics =
+        contact.id === 'mom' ? ['吃饭了吗', '天冷了多穿点'] : [];
     });
     // 只 fake setInterval/Date: setTimeout 保持真实, 测试里用它 flush 事件循环,
     // 让 db 事务(setImmediate 链)在断言前完成; setImmediate 同理不能 fake(死锁)

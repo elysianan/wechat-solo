@@ -6,6 +6,7 @@ import { initializeDatabase } from '../db/init';
 import { useChatStore } from '../stores/useChatStore';
 import { useContactStore } from '../stores/useContactStore';
 import { useAppStore } from '../stores/useAppStore';
+import { PERSONAS } from '../data/personas';
 
 describe('Chat Core Flow', () => {
   beforeEach(async () => {
@@ -32,12 +33,9 @@ describe('Chat Core Flow', () => {
       contact.persona.behavior.readButNoReplyChance = 0;
     });
 
-    // mom 默认回复池，用于判断 Agent 是否已回复
-    const momDefaultReplies = [
-      '你最近忙不忙',
-      '什么时候回家看看',
-      '妈妈给你转了一篇养生文章',
-    ];
+    // mom 默认回复池(动态取自规则库, 不硬编码台词, 内容扩容不受影响)
+    const momDefaultReplies =
+      PERSONAS.find((p) => p.id === 'mom')!.rules.find((r) => r.triggers.default)!.responses;
 
     render(<App />);
 
