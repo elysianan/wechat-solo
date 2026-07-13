@@ -32,7 +32,6 @@ function App() {
   const currentTab = useAppStore((state) => state.currentTab);
   const pageStack = useAppStore((state) => state.pageStack);
   const topRoute = pageStack[pageStack.length - 1];
-  const isTabLayerActive = topRoute.type === 'tabs';
   const isDetailActive = topRoute.type !== 'tabs';
   const TabPage = tabPages[currentTab];
 
@@ -59,21 +58,17 @@ function App() {
         data-theme={darkMode ? 'dark' : 'light'}
         data-testid="phone-shell"
       >
-        {/* Tab 页面层 */}
-        <div
-          className={`absolute inset-0 transition-transform duration-300 ease-in-out ${
-            isTabLayerActive ? 'translate-x-0' : '-translate-x-full'
-          }`}
-          data-testid="tab-layer"
-        >
+        {/* Tab 页面层：固定底层，由子页面层覆盖，不参与滑动（避免双层动画叠加回弹） */}
+        <div className="absolute inset-0" data-testid="tab-layer">
           <TabPage />
           <TabBar />
         </div>
 
-        {/* 子页面层：始终挂载以支持滑入/滑出动画；通过 translate 类名控制显隐 */}
+        {/* 子页面层：用 left 定位做滑动动画，不用 transform——避免 transform 祖先
+            导致内部 fixed(MessageInput)/sticky(Header) 定位错乱（Header 消失/回弹） */}
         <div
-          className={`absolute inset-0 transition-transform duration-300 ease-in-out ${
-            isDetailActive ? 'translate-x-0' : 'translate-x-full'
+          className={`absolute inset-y-0 w-full transition-[left] duration-300 ease-out ${
+            isDetailActive ? 'left-0' : 'left-full'
           }`}
           data-testid="detail-layer"
         >

@@ -20,26 +20,26 @@ describe('App Routing', () => {
     await useChatStore.getState().loadChats();
   });
 
-  it('默认显示 tab 层', async () => {
+  it('默认显示 tab 层，detail 层在屏幕外', async () => {
     render(<App />);
     await waitFor(() => {
-      expect(screen.getByTestId('tab-layer')).toHaveClass('translate-x-0');
+      expect(screen.getByTestId('tab-layer')).toBeInTheDocument();
+      expect(screen.getByTestId('detail-layer')).toHaveClass('left-full');
     });
   });
 
-  it('从聊天列表进入详情页后 tab 层滑出', async () => {
+  it('从聊天列表进入详情页后 detail 层滑入', async () => {
     render(<App />);
     await waitFor(() => {
       expect(screen.getAllByTestId('chat-list-item')[0]).toBeInTheDocument();
     });
     fireEvent.click(screen.getAllByTestId('chat-list-item')[0]);
     await waitFor(() => {
-      expect(screen.getByTestId('tab-layer')).toHaveClass('-translate-x-full');
-      expect(screen.getByTestId('detail-layer')).toBeInTheDocument();
+      expect(screen.getByTestId('detail-layer')).toHaveClass('left-0');
     });
   });
 
-  it('从详情页返回 tab 层', async () => {
+  it('从详情页返回 tab 层后 detail 层滑出', async () => {
     render(<App />);
     await waitFor(() => {
       expect(screen.getAllByTestId('chat-list-item')[0]).toBeInTheDocument();
@@ -50,7 +50,7 @@ describe('App Routing', () => {
     });
     fireEvent.click(screen.getByTestId('header-back'));
     await waitFor(() => {
-      expect(screen.getByTestId('tab-layer')).toHaveClass('translate-x-0');
+      expect(screen.getByTestId('detail-layer')).toHaveClass('left-full');
     });
   });
 });
