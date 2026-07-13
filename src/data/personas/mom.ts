@@ -139,7 +139,7 @@ export const momPersona: PersonaDraft = {
     },
     {
       id: 'mom-miss',
-      triggers: { keywords: ['想你', '想家', '想'] },
+      triggers: { keywords: ['想你', '想家'] },
       responses: [
         '妈妈也想你，天天都想。❤️',
         '想{keyword}就回来看看，家门永远开着。',
@@ -202,11 +202,12 @@ export const momPersona: PersonaDraft = {
       id: 'mom-default',
       triggers: { default: true },
       responses: [
-        '你最近忙不忙？要注意身体。',
-        '什么时候回家看看？',
-        '妈妈给你转了一篇养生文章，记得看。',
-        '嗯，你自己有数就好。',
-        '有事随时跟妈说，别一个人扛着。❤️',
+        '嗯嗯，妈妈听着呢。',
+        '这样啊，你自己拿主意就好。',
+        '妈妈不太懂这些，但你说得对。',
+        '嗯？后来呢，跟妈细说说。',
+        '嗯，妈信你，照顾好自己。',
+        '好，妈记下了。对了，吃饭了吗？',
       ],
       weight: 0.5,
     },

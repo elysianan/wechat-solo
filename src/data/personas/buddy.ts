@@ -105,7 +105,7 @@ export const buddyPersona: PersonaDraft = {
     },
     {
       id: 'buddy-movie',
-      triggers: { keywords: ['电影', '剧', '看'] },
+      triggers: { keywords: ['电影', '剧'] },
       responses: [
         '那部我也看了，结尾直接给我看懵了',
         '{keyword}什么类型？科幻还是动作？',
@@ -188,11 +188,12 @@ export const buddyPersona: PersonaDraft = {
       id: 'buddy-default',
       triggers: { default: true },
       responses: [
-        '哈哈哈哈哈哈哈哈',
-        '你又加班？资本家看了都流泪',
-        '兄弟666',
-        '细说',
-        '？？？',
+        '哈哈哈哈哈哈',
+        '细说细说，我瓜子都备好了',
+        '？？？展开讲讲',
+        '然后呢然后呢',
+        '有点东西',
+        '嗯哼？继续',
       ],
       weight: 0.5,
     },

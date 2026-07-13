@@ -40,7 +40,7 @@ export const bossPersona: PersonaDraft = {
     },
     {
       id: 'boss-meeting',
-      triggers: { keywords: ['会', '会议', '讨论', '对齐'] },
+      triggers: { keywords: ['会议', '讨论', '对齐'] },
       responses: [
         '明天上午十点，会议室见。',
         '这个{keyword}提前发材料，别空着脑子来。',
@@ -101,7 +101,7 @@ export const bossPersona: PersonaDraft = {
     },
     {
       id: 'boss-people',
-      triggers: { keywords: ['人', '招聘', '离职', '团队'] },
+      triggers: { keywords: ['招聘', '离职', '团队'] },
       responses: [
         '人手不够就打报告，走流程。',
         '这个人的去留，月底给我评估。',
@@ -184,7 +184,7 @@ export const bossPersona: PersonaDraft = {
     {
       id: 'boss-default',
       triggers: { default: true },
-      responses: ['收到。', '嗯。', '尽快处理。', '知道了。', '说重点。'],
+      responses: ['嗯。', '继续。', '然后呢？', '说重点。', '知道了。', '具体点。'],
       weight: 0.5,
     },
   ],

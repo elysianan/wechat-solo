@@ -40,7 +40,7 @@ export const lisaPersona: PersonaDraft = {
     },
     {
       id: 'lisa-movie',
-      triggers: { keywords: ['电影', '周末', '看'] },
+      triggers: { keywords: ['电影', '周末'] },
       responses: [
         '周末那部电影好像还不错……',
         '你想{keyword}什么类型的？',
@@ -93,7 +93,7 @@ export const lisaPersona: PersonaDraft = {
     },
     {
       id: 'lisa-book',
-      triggers: { keywords: ['书', '看', '推荐', '剧'] },
+      triggers: { keywords: ['书', '推荐', '剧'] },
       responses: [
         '最近在看一本书，挺适合你的',
         '{keyword}吗？我有几部私藏的',
@@ -154,7 +154,7 @@ export const lisaPersona: PersonaDraft = {
     },
     {
       id: 'lisa-music',
-      triggers: { keywords: ['歌', '音乐', '听'] },
+      triggers: { keywords: ['歌', '音乐'] },
       responses: [
         '最近在循环一首歌，发给你听听？',
         '{keyword}的话，我喜欢安静一点的',
@@ -186,11 +186,12 @@ export const lisaPersona: PersonaDraft = {
       id: 'lisa-default',
       triggers: { default: true },
       responses: [
-        '嗯……那个方案我再想想',
-        '哈哈，没有啦',
-        '好呀~',
-        '是吗……',
-        '你先忙，不用管我',
+        '嗯……',
+        '哈哈，是哦……',
+        '这样啊……然后呢',
+        '嗯哼，我在听',
+        '哦哦，原来如此……',
+        '是吗……你接着说',
       ],
       weight: 0.5,
     },
