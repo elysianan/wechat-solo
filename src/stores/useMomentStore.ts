@@ -9,6 +9,7 @@ interface MomentState {
   loadMoments: () => Promise<void>;
   toggleLike: (momentId: string) => Promise<void>;
   addComment: (momentId: string, content: string) => Promise<void>;
+  deleteComment: (momentId: string, commentId: string) => Promise<void>;
 }
 
 // 朋友圈状态：加载动态、点赞、评论
@@ -53,6 +54,22 @@ export const useMomentStore = create<MomentState>((set) => ({
       createdAt: Date.now(),
     };
     const nextComments = [...moment.comments, newComment];
+
+    await db.moments.update(momentId, { comments: nextComments });
+
+    set((state) => ({
+      moments: state.moments.map((m) =>
+        m.id === momentId ? { ...m, comments: nextComments } : m
+      ),
+    }));
+  },
+
+  // 删除评论：对齐微信行为，仅 UI 层对自己的评论开放入口
+  deleteComment: async (momentId, commentId) => {
+    const moment = await db.moments.get(momentId);
+    if (!moment) return;
+
+    const nextComments = moment.comments.filter((c) => c.id !== commentId);
 
     await db.moments.update(momentId, { comments: nextComments });
 

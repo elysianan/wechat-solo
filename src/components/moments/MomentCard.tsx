@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Heart, MessageCircle } from 'lucide-react';
 import type { Moment } from '../../types';
 import { useContactStore } from '../../stores/useContactStore';
@@ -17,8 +18,11 @@ export function MomentCard({ moment, onCommentClick }: MomentCardProps) {
     state.contacts.find((c) => c.id === moment.authorId)
   );
   const toggleLike = useMomentStore((state) => state.toggleLike);
+  const deleteComment = useMomentStore((state) => state.deleteComment);
   const contacts = useContactStore((state) => state.contacts);
   const hasLiked = moment.likes.some((like) => like.contactId === 'me');
+  // 当前展开「删除」气泡的评论 id（仅自己的评论可展开）
+  const [activeCommentId, setActiveCommentId] = useState<string | null>(null);
 
   if (!author) return null;
 
@@ -70,9 +74,35 @@ export function MomentCard({ moment, onCommentClick }: MomentCardProps) {
               {moment.comments.map((comment) => {
                 const commenter = contacts.find((c) => c.id === comment.contactId);
                 const name = comment.contactId === 'me' ? '我' : commenter?.name ?? '';
+                const isMine = comment.contactId === 'me';
                 return (
-                  <div key={comment.id} className="text-sm text-wechat-text-primary">
-                    <span className="font-medium">{name}</span>：{comment.content}
+                  <div key={comment.id} className="text-sm text-wechat-text-primary flex items-center">
+                    <span
+                      onClick={
+                        isMine
+                          ? () =>
+                              setActiveCommentId(
+                                activeCommentId === comment.id ? null : comment.id
+                              )
+                          : undefined
+                      }
+                      className={isMine ? 'cursor-pointer' : ''}
+                      data-testid={`moment-comment-${comment.id}`}
+                    >
+                      <span className="font-medium">{name}</span>：{comment.content}
+                    </span>
+                    {isMine && activeCommentId === comment.id && (
+                      <button
+                        onClick={() => {
+                          deleteComment(moment.id, comment.id);
+                          setActiveCommentId(null);
+                        }}
+                        className="ml-2 text-xs text-white bg-gray-700 px-2 py-0.5 rounded"
+                        data-testid="comment-delete-button"
+                      >
+                        删除
+                      </button>
+                    )}
                   </div>
                 );
               })}
