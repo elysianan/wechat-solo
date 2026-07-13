@@ -6,7 +6,11 @@ export type PageRoute =
   | { type: 'tabs' }
   | { type: 'chat-detail'; conversationId: string }
   | { type: 'contact-detail'; contactId: string }
-  | { type: 'moments' };
+  | { type: 'moments' }
+  | { type: 'profile-edit' }
+  | { type: 'pay' }
+  | { type: 'settings' }
+  | { type: 'about' };
 
 interface AppState {
   currentTab: Tab;
@@ -17,6 +21,10 @@ interface AppState {
   navigateToChatDetail: (conversationId: string) => void;
   navigateToContactDetail: (contactId: string) => void;
   navigateToMoments: () => void;
+  navigateToProfileEdit: () => void;
+  navigateToPay: () => void;
+  navigateToSettings: () => void;
+  navigateToAbout: () => void;
   navigateBackToTabs: () => void;
 }
 
@@ -50,6 +58,26 @@ export const useAppStore = create<AppState>((set) => ({
   navigateToMoments: () =>
     set((state) => ({
       pageStack: [...state.pageStack, { type: 'moments' }],
+    })),
+
+  navigateToProfileEdit: () =>
+    set((state) => ({
+      pageStack: [...state.pageStack, { type: 'profile-edit' }],
+    })),
+
+  navigateToPay: () =>
+    set((state) => ({
+      pageStack: [...state.pageStack, { type: 'pay' }],
+    })),
+
+  navigateToSettings: () =>
+    set((state) => ({
+      pageStack: [...state.pageStack, { type: 'settings' }],
+    })),
+
+  navigateToAbout: () =>
+    set((state) => ({
+      pageStack: [...state.pageStack, { type: 'about' }],
     })),
 
   navigateBackToTabs: () => set({ pageStack: [{ type: 'tabs' }] }),
