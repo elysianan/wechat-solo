@@ -89,11 +89,17 @@ export interface Tag {
   createdAt: number;
 }
 
+// 时段枚举: 规则的时段感知触发
+export type TimeWindow = 'morning' | 'afternoon' | 'evening' | 'night';
+
 // Agent 回复触发条件
 export interface ReplyTrigger {
   keywords?: string[];
   patterns?: RegExp[];
+  // 上下文门槛: 最近 5 条消息含任一关键词, 该规则才可命中
   context?: string[];
+  // 时段限制: 仅在指定时段参与匹配; 缺省表示全时段
+  timeWindow?: TimeWindow[];
   default?: boolean;
 }
 

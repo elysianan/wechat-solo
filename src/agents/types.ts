@@ -15,6 +15,7 @@ export interface GenerateReplyInput {
   options?: {
     timeScale?: number; // 默认 1；0 表示立即响应
     forceReply?: boolean; // true 时跳过"已读不回"判定（@提及场景必回）
+    now?: number; // 当前时间戳(时段感知用, 测试可注入; 默认 Date.now())
   };
 }
 

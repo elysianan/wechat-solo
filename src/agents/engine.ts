@@ -1,5 +1,6 @@
 import type { GenerateReplyInput, ReplyPlan } from './types';
 import type { ReplyRule } from '../types';
+import { getTimeWindow } from '../utils/timeWindow';
 
 // 生成 [min, max] 之间的随机数
 function randomBetween(min: number, max: number): number {
@@ -15,7 +16,18 @@ function pickRandom<T>(arr: T[]): T {
 }
 
 // 判断规则是否命中用户消息
-function matchesRule(rule: ReplyRule, content: string): boolean {
+// context 是门槛条件: 规则声明了 context 时, 最近 5 条消息必须含任一 context 关键词;
+// 若规则只有 context 没有 keywords/patterns, 门槛通过即命中
+function matchesRule(rule: ReplyRule, content: string, recentContents: string[]): boolean {
+  if (rule.triggers.context && rule.triggers.context.length > 0) {
+    const contextText = recentContents.slice(-5).join(' ');
+    if (!rule.triggers.context.some((keyword) => contextText.includes(keyword))) {
+      return false;
+    }
+    if (!rule.triggers.keywords && !rule.triggers.patterns) {
+      return true;
+    }
+  }
   if (rule.triggers.keywords?.some((keyword) => content.includes(keyword))) {
     return true;
   }
@@ -41,16 +53,26 @@ function selectWeightedRule(rules: ReplyRule[]): ReplyRule {
   return rules[rules.length - 1];
 }
 
-// 选择回复规则：先匹配关键词，无命中则兜底 default
-function selectRule(rules: ReplyRule[], content: string): ReplyRule | undefined {
+// 选择回复规则：先按时段过滤, 再匹配关键词/context, 无命中则兜底 default
+function selectRule(
+  rules: ReplyRule[],
+  content: string,
+  recentContents: string[],
+  now: number
+): ReplyRule | undefined {
   if (rules.length === 0) {
     return undefined;
   }
-  const matched = rules.filter((rule) => matchesRule(rule, content));
-  const candidates = matched.length > 0 ? matched : rules.filter((rule) => rule.triggers.default);
+  const currentWindow = getTimeWindow(now);
+  // 时段过滤: 声明了 timeWindow 的规则仅在指定时段参与候选
+  const inWindow = rules.filter(
+    (rule) => !rule.triggers.timeWindow || rule.triggers.timeWindow.includes(currentWindow)
+  );
+  const matched = inWindow.filter((rule) => matchesRule(rule, content, recentContents));
+  const candidates = matched.length > 0 ? matched : inWindow.filter((rule) => rule.triggers.default);
   if (candidates.length === 0) {
-    // 没有任何规则时回退到最后一条，保证引擎不崩溃
-    return rules[rules.length - 1];
+    // 时段过滤后无兜底时回退到过滤前的最后一条, 保证引擎不崩溃
+    return inWindow.length > 0 ? inWindow[inWindow.length - 1] : rules[rules.length - 1];
   }
   return selectWeightedRule(candidates);
 }
@@ -87,7 +109,9 @@ export function generateReply(input: GenerateReplyInput): ReplyPlan {
   }
 
   // 选择规则与回复文本
-  const rule = selectRule(contact.persona.rules, userMessage.content);
+  const now = options?.now ?? Date.now();
+  const recentContents = recentMessages.map((message) => message.content);
+  const rule = selectRule(contact.persona.rules, userMessage.content, recentContents, now);
   const replyMessages: Array<{ content: string }> = [];
   if (rule) {
     const firstResponse = pickRandom(rule.responses);
