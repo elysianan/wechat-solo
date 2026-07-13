@@ -7,6 +7,9 @@ import { ContactDetailPage } from './pages/ContactDetailPage';
 import { DiscoverPage } from './pages/DiscoverPage';
 import { MomentsPage } from './pages/MomentsPage';
 import { ProfileEditPage } from './pages/ProfileEditPage';
+import { PayPage } from './pages/PayPage';
+import { SettingsPage } from './pages/SettingsPage';
+import { AboutPage } from './pages/AboutPage';
 import { MePage } from './pages/MePage';
 import { useAppStore } from './stores/useAppStore';
 import { useContactStore } from './stores/useContactStore';
@@ -73,6 +76,9 @@ function App() {
           {topRoute.type === 'contact-detail' && <ContactDetailPage />}
           {topRoute.type === 'moments' && <MomentsPage />}
           {topRoute.type === 'profile-edit' && <ProfileEditPage />}
+          {topRoute.type === 'pay' && <PayPage />}
+          {topRoute.type === 'settings' && <SettingsPage />}
+          {topRoute.type === 'about' && <AboutPage />}
         </div>
       </div>
     </div>
