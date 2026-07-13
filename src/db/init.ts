@@ -30,7 +30,7 @@ export async function initializeDatabase(): Promise<void> {
           darkMode: false,
           soundEnabled: true,
           vibrationEnabled: true,
-          version: '1.5.0-Sprint5',
+          version: '1.6.0-Sprint6',
         });
         await db.tags.bulkAdd(seedTags);
       }
