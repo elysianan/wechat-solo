@@ -53,7 +53,7 @@ describe('主动发起对话调度器', () => {
   const momMessages = (): string[] =>
     (useChatStore.getState().messages[momConversation().id] ?? [])
       .filter((m) => m.senderId === 'mom')
-      .map((m) => m.content);
+      .map((m) => (m.type === 'text' ? m.content : ''));
 
   it('timeScale=0(无冷却): 每次检查都注入主动消息, 未读 +1', async () => {
     useChatStore.getState().startInitiateScheduler();

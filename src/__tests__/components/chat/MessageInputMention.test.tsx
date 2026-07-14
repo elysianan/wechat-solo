@@ -36,6 +36,6 @@ describe('MessageInput @功能', () => {
     fireEvent.change(screen.getByTestId('text-input'), { target: { value: '@张总 方案好了' } });
     fireEvent.click(screen.getByTestId('send-button'));
 
-    expect(onSend).toHaveBeenCalledWith('@张总 方案好了');
+    expect(onSend).toHaveBeenCalledWith({ type: 'text', content: '@张总 方案好了' });
   });
 });

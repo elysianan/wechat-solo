@@ -34,7 +34,7 @@ describe('useChatStore 群聊调度', () => {
 
   it('@成员必回：@王阿姨 后家庭群收到妈妈回复', async () => {
     const family = groupOf('幸福一家人');
-    await useChatStore.getState().sendMessage(family.id, '@王阿姨 晚上几点吃饭？');
+    await useChatStore.getState().sendMessage(family.id, { type: 'text', content: '@王阿姨 晚上几点吃饭？' });
     await vi.runAllTimersAsync();
 
     const messages = useChatStore.getState().messages[family.id];
@@ -44,7 +44,7 @@ describe('useChatStore 群聊调度', () => {
 
   it('@多成员多人依次回复', async () => {
     const work = groupOf('产品研发群');
-    await useChatStore.getState().sendMessage(work.id, '@阿杰 @张总 这个需求看下');
+    await useChatStore.getState().sendMessage(work.id, { type: 'text', content: '@阿杰 @张总 这个需求看下' });
     await vi.runAllTimersAsync();
 
     const messages = useChatStore.getState().messages[work.id];
@@ -63,7 +63,7 @@ describe('useChatStore 群聊调度', () => {
     const family = groupOf('幸福一家人');
     const before = useChatStore.getState().messages[family.id].length;
 
-    await useChatStore.getState().sendMessage(family.id, '在忙，晚点说');
+    await useChatStore.getState().sendMessage(family.id, { type: 'text', content: '在忙，晚点说' });
     await vi.runAllTimersAsync();
 
     const after = useChatStore.getState().messages[family.id];
@@ -77,7 +77,7 @@ describe('useChatStore 群聊调度', () => {
     });
     const work = groupOf('产品研发群');
 
-    await useChatStore.getState().sendMessage(work.id, '大家看下这个方案');
+    await useChatStore.getState().sendMessage(work.id, { type: 'text', content: '大家看下这个方案' });
     await vi.runAllTimersAsync();
 
     const messages = useChatStore.getState().messages[work.id];
@@ -95,11 +95,11 @@ describe('useChatStore 群聊调度', () => {
     // sendMessage 的 await 链期间就触发, 中间态 sending 无法稳定观测
     useChatStore.getState().setReplyTimeScale(1);
 
-    await useChatStore.getState().sendMessage(family.id, '测试状态');
+    await useChatStore.getState().sendMessage(family.id, { type: 'text', content: '测试状态' });
     const userMessage = useChatStore
       .getState()
       .messages[family.id]
-      .find((m) => m.senderId === 'me' && m.content === '测试状态')!;
+      .find((m) => m.senderId === 'me' && m.type === 'text' && m.content === '测试状态')!;
     expect(userMessage.status).toBe('sending');
 
     await vi.runAllTimersAsync();
@@ -112,7 +112,7 @@ describe('useChatStore 群聊调度', () => {
 
   it('群回复持久化到 IndexedDB', async () => {
     const family = groupOf('幸福一家人');
-    await useChatStore.getState().sendMessage(family.id, '@王阿姨 在吗');
+    await useChatStore.getState().sendMessage(family.id, { type: 'text', content: '@王阿姨 在吗' });
     await vi.runAllTimersAsync();
 
     const dbMessages = await db.messages

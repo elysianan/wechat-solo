@@ -32,12 +32,12 @@ describe('useChatStore agent flow', () => {
   it('sends message and transitions status to read', async () => {
     await useChatStore.getState().loadChats();
     const conversation = useChatStore.getState().conversations[0];
-    await useChatStore.getState().sendMessage(conversation.id, '测试消息');
+    await useChatStore.getState().sendMessage(conversation.id, { type: 'text', content: '测试消息' });
 
     const userMessage = useChatStore
       .getState()
       .messages[conversation.id]
-      .find((m) => m.senderId === 'me' && m.content === '测试消息')!;
+      .find((m) => m.senderId === 'me' && m.type === 'text' && m.content === '测试消息')!;
     expect(userMessage.status).toBe('sending');
 
     await vi.runAllTimersAsync();
@@ -56,7 +56,7 @@ describe('useChatStore agent flow', () => {
 
     await useChatStore.getState().loadChats();
     const conversation = useChatStore.getState().conversations.find((c) => c.contactId === 'mom')!;
-    await useChatStore.getState().sendMessage(conversation.id, '吃了吗');
+    await useChatStore.getState().sendMessage(conversation.id, { type: 'text', content: '吃了吗' });
     await vi.runAllTimersAsync();
 
     const messages = useChatStore.getState().messages[conversation.id];
@@ -75,7 +75,7 @@ describe('useChatStore agent flow', () => {
     await useChatStore.getState().loadChats();
     useChatStore.setState({ replyTimeScale: 1 });
     const conversation = useChatStore.getState().conversations.find((c) => c.contactId === 'mom')!;
-    await useChatStore.getState().sendMessage(conversation.id, '吃了吗');
+    await useChatStore.getState().sendMessage(conversation.id, { type: 'text', content: '吃了吗' });
 
     // readDelay 之前不应出现"正在输入"
     expect(useChatStore.getState().typingConversations[conversation.id]).toBeFalsy();
@@ -97,7 +97,7 @@ describe('useChatStore agent flow', () => {
     const conversation = useChatStore.getState().conversations.find((c) => c.contactId === 'mom')!;
     useAppStore.setState({ pageStack: [{ type: 'chat-detail', conversationId: 'other-conv' }] });
 
-    await useChatStore.getState().sendMessage(conversation.id, '吃了吗');
+    await useChatStore.getState().sendMessage(conversation.id, { type: 'text', content: '吃了吗' });
     await vi.runAllTimersAsync();
 
     const updated = useChatStore.getState().conversations.find((c) => c.id === conversation.id);

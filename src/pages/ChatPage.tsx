@@ -6,6 +6,27 @@ import { useChatStore } from '../stores/useChatStore';
 import { useContactStore } from '../stores/useContactStore';
 import type { Message } from '../types';
 
+// 根据消息类型生成会话列表最后一条预览文案
+function getMessagePreview(message: Message | undefined): string {
+  if (!message) return '';
+  switch (message.type) {
+    case 'text':
+      return message.content;
+    case 'image':
+      return '[图片]';
+    case 'voice':
+      return '[语音]';
+    case 'redpacket':
+      return '[微信红包]';
+    case 'transfer':
+      return '[转账]';
+    case 'location':
+      return '[位置]';
+    default:
+      return '';
+  }
+}
+
 // 聊天列表页：展示微信会话列表，点击后进入聊天详情
 export function ChatPage() {
   const navigateToChatDetail = useAppStore((state) => state.navigateToChatDetail);
@@ -62,7 +83,7 @@ export function ChatPage() {
           // 群聊用会话自带的名称/头像，预览加上发言者昵称前缀
           const name = isGroup ? conversation.name ?? '群聊' : contact!.name;
           const avatar = isGroup ? conversation.avatar ?? '' : contact!.avatar;
-          let preview = lastMessage?.content || '';
+          let preview = getMessagePreview(lastMessage);
           if (isGroup && lastMessage && lastMessage.senderId !== 'me') {
             const senderName = contacts.find((c) => c.id === lastMessage.senderId)?.name;
             if (senderName) preview = `${senderName}：${preview}`;

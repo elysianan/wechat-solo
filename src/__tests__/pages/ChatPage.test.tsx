@@ -36,4 +36,15 @@ describe('ChatPage', () => {
     expect(topRoute?.type).toBe('chat-detail');
     expect(topRoute).toHaveProperty('conversationId');
   });
+
+  it('非文本消息在列表中显示类型占位文案', async () => {
+    render(<ChatPage />);
+    await waitFor(() => {
+      expect(screen.getAllByTestId('chat-list-item').length).toBeGreaterThan(0);
+    });
+    // 种子数据：mom 最后一条是图片，buddy 是语音，lisa 是红包
+    expect(screen.getByText('[图片]')).toBeInTheDocument();
+    expect(screen.getByText('[语音]')).toBeInTheDocument();
+    expect(screen.getByText('[微信红包]')).toBeInTheDocument();
+  });
 });

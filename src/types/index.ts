@@ -9,18 +9,22 @@ export interface Me {
 }
 
 // 消息类型
-export type MessageType = 'text' | 'image' | 'voice' | 'redpacket' | 'transfer' | 'location';
+export type MessageType =
+  | 'text'
+  | 'image'
+  | 'voice'
+  | 'redpacket'
+  | 'transfer'
+  | 'location';
 
 // 消息状态
 export type MessageStatus = 'sending' | 'sent' | 'delivered' | 'read' | 'failed';
 
-// 消息
-export interface Message {
+// 消息公共字段
+interface BaseMessage {
   id: string;
   conversationId: string;
   senderId: 'me' | string;
-  type: MessageType;
-  content: string;
   status: MessageStatus;
   createdAt: number;
   replyTo?: {
@@ -29,6 +33,90 @@ export interface Message {
     content: string;
   };
 }
+
+// 文本消息
+export interface TextMessage extends BaseMessage {
+  type: 'text';
+  content: string;
+}
+
+// 图片消息
+export interface ImageMessage extends BaseMessage {
+  type: 'image';
+  url: string;
+  width?: number;
+  height?: number;
+}
+
+// 语音消息
+export interface VoiceMessage extends BaseMessage {
+  type: 'voice';
+  url: string;
+  duration: number;
+}
+
+// 红包消息
+export interface RedPacketMessage extends BaseMessage {
+  type: 'redpacket';
+  amount: number;
+  title?: string;
+  packetStatus: 'pending' | 'opened' | 'expired';
+}
+
+// 转账消息（占位，Sprint7 仅提供默认渲染）
+export interface TransferMessage extends BaseMessage {
+  type: 'transfer';
+  amount: number;
+  note?: string;
+  transferStatus: 'pending' | 'received' | 'refunded';
+}
+
+// 位置消息（占位，Sprint7 仅提供默认渲染）
+export interface LocationMessage extends BaseMessage {
+  type: 'location';
+  address: string;
+  lat?: number;
+  lng?: number;
+}
+
+export type Message =
+  | TextMessage
+  | ImageMessage
+  | VoiceMessage
+  | RedPacketMessage
+  | TransferMessage
+  | LocationMessage;
+
+// 发送消息时传入的负载（不含 id / senderId / status / createdAt 等运行时字段）
+export interface TextPayload {
+  type: 'text';
+  content: string;
+}
+
+export interface ImagePayload {
+  type: 'image';
+  url: string;
+  width?: number;
+  height?: number;
+}
+
+export interface VoicePayload {
+  type: 'voice';
+  url: string;
+  duration: number;
+}
+
+export interface RedPacketPayload {
+  type: 'redpacket';
+  amount: number;
+  title?: string;
+}
+
+export type MessagePayload =
+  | TextPayload
+  | ImagePayload
+  | VoicePayload
+  | RedPacketPayload;
 
 // 会话类型
 export type ConversationType = 'single' | 'group';

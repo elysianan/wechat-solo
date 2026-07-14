@@ -1,28 +1,38 @@
 import { useRef, useState } from 'react';
-import { Plus, AtSign } from 'lucide-react';
-import { WeChatToast } from '../common/WeChatToast';
+import { Plus, AtSign, Image as ImageIcon, Mic, Gift, X } from 'lucide-react';
 import { MentionPicker, type MentionMember } from './MentionPicker';
+import type { MessagePayload } from '../../types';
 
 interface MessageInputProps {
-  onSend: (text: string) => void;
+  onSend: (payload: MessagePayload) => void;
   // 群聊成员列表：传入时显示 @ 按钮
   members?: MentionMember[];
 }
 
-// 底部消息输入框：支持输入文字、回车发送、@成员（群聊）、工具按钮触发演示模式 Toast
+// 底部消息输入框：支持文字、图片、语音、红包、@成员
 export function MessageInput({ onSend, members }: MessageInputProps) {
   const [text, setText] = useState('');
-  const [showToast, setShowToast] = useState(false);
   const [showMention, setShowMention] = useState(false);
+  const [showTools, setShowTools] = useState(false);
+  const [showRedPacket, setShowRedPacket] = useState(false);
+  const [redPacketAmount, setRedPacketAmount] = useState('');
+  const [redPacketTitle, setRedPacketTitle] = useState('恭喜发财，大吉大利');
+
+  const [isRecording, setIsRecording] = useState(false);
+  const [recordingSeconds, setRecordingSeconds] = useState(0);
+  const recordingTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
   const inputRef = useRef<HTMLInputElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   // 打开 @ 面板前记录光标位置，用于插入
   const cursorRef = useRef<number | null>(null);
 
-  const handleSend = () => {
+  const handleSendText = () => {
     const trimmed = text.trim();
     if (!trimmed) return;
-    onSend(trimmed);
+    onSend({ type: 'text', content: trimmed });
     setText('');
+    setShowTools(false);
   };
 
   const handleMentionSelect = (name: string) => {
@@ -35,23 +45,157 @@ export function MessageInput({ onSend, members }: MessageInputProps) {
     inputRef.current?.focus();
   };
 
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const url = URL.createObjectURL(file);
+    onSend({ type: 'image', url });
+    e.target.value = '';
+    setShowTools(false);
+  };
+
+  const startRecording = () => {
+    setIsRecording(true);
+    setRecordingSeconds(0);
+    recordingTimerRef.current = setInterval(() => {
+      setRecordingSeconds((s) => s + 1);
+    }, 1000);
+  };
+
+  const stopRecording = () => {
+    if (!isRecording) return;
+    if (recordingTimerRef.current) {
+      clearInterval(recordingTimerRef.current);
+      recordingTimerRef.current = null;
+    }
+    setIsRecording(false);
+    const duration = Math.max(recordingSeconds, 1);
+    onSend({ type: 'voice', url: 'voice://demo', duration });
+    setRecordingSeconds(0);
+    setShowTools(false);
+  };
+
+  const handleSendRedPacket = () => {
+    const amount = parseFloat(redPacketAmount);
+    if (Number.isNaN(amount) || amount <= 0) return;
+    onSend({ type: 'redpacket', amount, title: redPacketTitle.trim() || undefined });
+    setRedPacketAmount('');
+    setRedPacketTitle('恭喜发财，大吉大利');
+    setShowRedPacket(false);
+    setShowTools(false);
+  };
+
   return (
     <div
-      className="fixed bottom-0 left-0 right-0 bg-wechat-bg border-t border-wechat-divider px-3 py-2 max-w-phone mx-auto"
+      className="fixed bottom-0 left-0 right-0 bg-wechat-bg border-t border-wechat-divider px-3 py-2 max-w-phone mx-auto z-20"
       data-testid="message-input"
     >
-      <WeChatToast message="演示模式 · 该功能仅供展示" visible={showToast} onClose={() => setShowToast(false)} />
       <MentionPicker
         visible={showMention}
         members={members ?? []}
         onSelect={handleMentionSelect}
         onClose={() => setShowMention(false)}
       />
+
+      {showRedPacket && (
+        <div className="absolute bottom-full left-0 right-0 bg-wechat-card p-4 shadow-lg border-t border-wechat-divider">
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-sm font-medium">发红包</span>
+            <button
+              type="button"
+              onClick={() => setShowRedPacket(false)}
+              data-testid="redpacket-cancel-button"
+            >
+              <X size={18} />
+            </button>
+          </div>
+          <input
+            type="number"
+            inputMode="decimal"
+            placeholder="金额（元）"
+            value={redPacketAmount}
+            onChange={(e) => setRedPacketAmount(e.target.value)}
+            className="w-full bg-wechat-bg rounded-md px-3 py-2 text-sm mb-2 outline-none"
+            data-testid="redpacket-amount-input"
+          />
+          <input
+            type="text"
+            placeholder="祝福语"
+            value={redPacketTitle}
+            onChange={(e) => setRedPacketTitle(e.target.value)}
+            className="w-full bg-wechat-bg rounded-md px-3 py-2 text-sm mb-3 outline-none"
+            data-testid="redpacket-title-input"
+          />
+          <button
+            type="button"
+            onClick={handleSendRedPacket}
+            disabled={!redPacketAmount || parseFloat(redPacketAmount) <= 0}
+            className="w-full bg-wechat-green text-white text-sm py-2 rounded-md disabled:opacity-50"
+            data-testid="redpacket-send-button"
+          >
+            塞钱进红包
+          </button>
+        </div>
+      )}
+
+      {showTools && !showRedPacket && (
+        <div className="flex gap-6 px-2 py-3">
+          <button
+            type="button"
+            onClick={() => fileInputRef.current?.click()}
+            className="flex flex-col items-center gap-1 text-wechat-text-secondary"
+            data-testid="tool-image-button"
+          >
+            <div className="w-12 h-12 rounded-xl bg-wechat-card flex items-center justify-center">
+              <ImageIcon size={24} />
+            </div>
+            <span className="text-xs">图片</span>
+          </button>
+          <button
+            type="button"
+            onMouseDown={startRecording}
+            onMouseUp={stopRecording}
+            onMouseLeave={stopRecording}
+            onTouchStart={startRecording}
+            onTouchEnd={stopRecording}
+            className="flex flex-col items-center gap-1 text-wechat-text-secondary select-none"
+            data-testid="tool-voice-button"
+          >
+            <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
+              isRecording ? 'bg-wechat-green text-white' : 'bg-wechat-card'
+            }`}>
+              <Mic size={24} />
+            </div>
+            <span className="text-xs">{isRecording ? `${recordingSeconds}s` : '语音'}</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setShowRedPacket(true)}
+            className="flex flex-col items-center gap-1 text-wechat-text-secondary"
+            data-testid="tool-redpacket-button"
+          >
+            <div className="w-12 h-12 rounded-xl bg-wechat-card flex items-center justify-center">
+              <Gift size={24} />
+            </div>
+            <span className="text-xs">红包</span>
+          </button>
+        </div>
+      )}
+
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/*"
+        onChange={handleImageChange}
+        className="hidden"
+        data-testid="image-file-input"
+      />
+
       <div className="flex items-center gap-2">
         <button
           type="button"
-          onClick={() => setShowToast(true)}
-          className="text-wechat-text-secondary"
+          onClick={() => setShowTools((prev) => !prev)}
+          className={`text-wechat-text-secondary transition-transform ${showTools ? 'rotate-45' : ''}`}
           data-testid="tool-button"
         >
           <Plus size={28} />
@@ -74,14 +218,14 @@ export function MessageInput({ onSend, members }: MessageInputProps) {
           type="text"
           value={text}
           onChange={(e) => setText(e.target.value)}
-          onKeyDown={(e) => e.key === 'Enter' && handleSend()}
+          onKeyDown={(e) => e.key === 'Enter' && handleSendText()}
           placeholder="请输入消息"
           className="flex-1 bg-wechat-card rounded-md px-3 py-2 text-sm outline-none"
           data-testid="text-input"
         />
         <button
           type="button"
-          onClick={handleSend}
+          onClick={handleSendText}
           disabled={!text.trim()}
           className="bg-wechat-green text-white text-sm px-4 py-2 rounded-md disabled:opacity-50"
           data-testid="send-button"

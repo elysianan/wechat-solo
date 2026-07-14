@@ -60,6 +60,9 @@ export const seedConversations: Conversation[] = seedContacts.map((contact, inde
   updatedAt: BASE_TIME - index * 60 * 60 * 1000,
 }));
 
+const RED_DOT_PNG =
+  'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==';
+
 export const seedMessages: Message[] = seedContacts.flatMap((contact) => {
   const conversationId = `conv-${contact.id}`;
   const now = BASE_TIME;
@@ -91,6 +94,44 @@ export const seedMessages: Message[] = seedContacts.flatMap((contact) => {
       createdAt: now - 1000 * 60 * 30,
     },
   ];
+
+  // Sprint7：为 Demo 增加图片 / 语音 / 红包样例消息
+  if (contact.id === 'mom') {
+    baseMessages.push({
+      id: makeId('msg'),
+      conversationId,
+      senderId: contact.id,
+      type: 'image',
+      url: RED_DOT_PNG,
+      status: 'read',
+      createdAt: now - 1000 * 60 * 20,
+    });
+  }
+  if (contact.id === 'buddy') {
+    baseMessages.push({
+      id: makeId('msg'),
+      conversationId,
+      senderId: contact.id,
+      type: 'voice',
+      url: 'voice://demo',
+      duration: 4,
+      status: 'read',
+      createdAt: now - 1000 * 60 * 18,
+    });
+  }
+  if (contact.id === 'lisa') {
+    baseMessages.push({
+      id: makeId('msg'),
+      conversationId,
+      senderId: contact.id,
+      type: 'redpacket',
+      amount: 6.66,
+      title: '请你喝奶茶',
+      packetStatus: 'opened',
+      status: 'read',
+      createdAt: now - 1000 * 60 * 16,
+    });
+  }
 
   return baseMessages;
 });
