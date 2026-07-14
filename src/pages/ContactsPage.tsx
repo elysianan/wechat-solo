@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Header } from '../components/common/Header';
+import { Search } from 'lucide-react';
 import { AlphabetIndex } from '../components/contacts/AlphabetIndex';
 import { ContactListSection } from '../components/contacts/ContactListSection';
 import { ContactTopEntries } from '../components/contacts/ContactTopEntries';
@@ -103,15 +104,18 @@ export function ContactsPage() {
   return (
     <div className="relative h-full overflow-y-auto bg-wechat-bg pb-16" data-testid="contacts-page">
       <Header title="通讯录" />
-      <div className="sticky top-12 z-10 px-3 py-2 bg-wechat-bg">
-        <input
-          type="text"
-          value={searchKeyword}
-          onChange={(e) => setSearchKeyword(e.target.value)}
-          placeholder="搜索"
-          className="w-full bg-wechat-card rounded-md px-3 py-2 text-sm outline-none"
-          data-testid="contacts-search"
-        />
+      <div className="sticky top-11 z-10 px-3 py-2 bg-wechat-bg">
+        <div className="flex items-center bg-wechat-card rounded-lg px-3 py-2">
+          <Search size={16} className="text-wechat-text-secondary mr-2" />
+          <input
+            type="text"
+            value={searchKeyword}
+            onChange={(e) => setSearchKeyword(e.target.value)}
+            placeholder="搜索"
+            className="flex-1 bg-transparent text-sm outline-none text-wechat-text-primary"
+            data-testid="contacts-search"
+          />
+        </div>
       </div>
       <ContactTopEntries />
       <div className="relative">

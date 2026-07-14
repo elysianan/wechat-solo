@@ -38,7 +38,7 @@ export function TagListPage() {
           <button
             key={item.name}
             onClick={() => navigateToTagDetail(item.name)}
-            className="w-full flex items-center px-4 py-3 active:bg-wechat-bg"
+            className="w-full flex items-center px-4 py-3 active:bg-wechat-bg active:scale-[0.98] transition-transform duration-100"
             data-testid={`tag-row-${item.name}`}
           >
             <span className="text-base text-wechat-text-primary flex-1 text-left">{item.name}</span>

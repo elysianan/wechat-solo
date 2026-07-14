@@ -42,7 +42,7 @@ export function ContactDetailPage() {
           <img
             src={assetUrl(contact.avatar)}
             alt={contact.name}
-            className="w-16 h-16 rounded-md bg-gray-200 object-cover"
+            className="w-16 h-16 rounded bg-wechat-bg object-cover"
           />
           <div className="ml-4 flex-1">
             <div className="text-lg font-medium text-wechat-text-primary">{contact.name}</div>

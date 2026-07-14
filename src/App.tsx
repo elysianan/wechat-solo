@@ -52,7 +52,7 @@ function App() {
   }, [contactsLoaded, loadContacts, chatsLoaded, loadChats, settingsLoaded, loadSettings]);
 
   return (
-    <div className="relative w-full h-screen overflow-hidden bg-gray-100">
+    <div className="relative w-full h-screen overflow-hidden bg-wechat-bg">
       <div
         className="relative mx-auto max-w-phone h-full overflow-hidden bg-wechat-bg shadow-xl"
         data-theme={darkMode ? 'dark' : 'light'}
@@ -67,7 +67,7 @@ function App() {
         {/* 子页面层：用 left 定位做滑动动画，不用 transform——避免 transform 祖先
             导致内部 fixed(MessageInput)/sticky(Header) 定位错乱（Header 消失/回弹） */}
         <div
-          className={`absolute inset-y-0 w-full transition-[left] duration-300 ease-out ${
+          className={`absolute inset-y-0 w-full transition-[left] duration-300 ease-in-out ${
             isDetailActive ? 'left-0' : 'left-full'
           }`}
           data-testid="detail-layer"

@@ -43,7 +43,7 @@ export function ContactTopEntries() {
             <button
               key={entry.id}
               onClick={() => handleClick(entry)}
-              className="w-full flex items-center px-4 py-3 active:bg-wechat-bg"
+              className="w-full flex items-center px-4 py-3 active:bg-wechat-bg active:scale-[0.98] transition-transform duration-100"
               data-testid={`top-entry-${entry.id}`}
             >
               <Icon size={22} className="text-wechat-green" />

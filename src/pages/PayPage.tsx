@@ -38,7 +38,7 @@ export function PayPage() {
             <button
               key={entry.id}
               onClick={() => setToastVisible(true)}
-              className="flex flex-col items-center py-5 active:bg-wechat-bg"
+              className="flex flex-col items-center py-5 active:bg-wechat-bg active:scale-[0.98] transition-transform duration-100"
               data-testid={`pay-entry-${entry.id}`}
             >
               <Icon size={26} className="text-wechat-green" />
