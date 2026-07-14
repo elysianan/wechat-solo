@@ -54,4 +54,16 @@ describe('朋友圈页面', () => {
       expect(screen.getByText((content) => content.includes('测试评论'))).toBeInTheDocument();
     });
   });
+
+  it('点击图片打开 Lightbox', async () => {
+    render(<MomentsPage />);
+    await waitFor(() => {
+      expect(screen.queryAllByTestId(/^moment-image-\d+$/).length).toBeGreaterThan(0);
+    });
+
+    const firstImage = screen.queryAllByTestId(/^moment-image-\d+$/)[0];
+    fireEvent.click(firstImage);
+
+    expect(await screen.findByTestId('image-lightbox')).toBeInTheDocument();
+  });
 });

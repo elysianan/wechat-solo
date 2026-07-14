@@ -88,6 +88,22 @@ function buildMessageFromPayload(
   }
 }
 
+// 将已有消息重建为可发送的负载，用于重试失败消息
+function messageToPayload(message: Message): MessagePayload | null {
+  switch (message.type) {
+    case 'text':
+      return { type: 'text', content: message.content };
+    case 'image':
+      return { type: 'image', url: message.url, width: message.width, height: message.height };
+    case 'voice':
+      return { type: 'voice', url: message.url, duration: message.duration };
+    case 'redpacket':
+      return { type: 'redpacket', amount: message.amount, title: message.title };
+    default:
+      return null;
+  }
+}
+
 interface ChatState {
   conversations: Conversation[];
   messages: Record<string, Message[]>;
@@ -98,6 +114,8 @@ interface ChatState {
   sendMessage: (conversationId: string, payload: MessagePayload) => Promise<void>;
   markConversationRead: (conversationId: string) => Promise<void>;
   updateMessageStatus: (messageId: string, status: Message['status']) => Promise<void>;
+  deleteMessage: (conversationId: string, messageId: string) => Promise<void>;
+  retryMessage: (conversationId: string, messageId: string) => Promise<void>;
   setReplyTimeScale: (scale: number) => void;
   startInitiateScheduler: () => void;
   stopInitiateScheduler: () => void;
@@ -430,6 +448,55 @@ export const useChatStore = create<ChatState>((set) => ({
       }
       return { messages: next };
     });
+  },
+
+  deleteMessage: async (conversationId, messageId) => {
+    await db.messages.delete(messageId);
+
+    set((state) => {
+      const remaining = (state.messages[conversationId] || []).filter(
+        (m) => m.id !== messageId
+      );
+      const lastMessage = remaining[remaining.length - 1];
+      const nextConversations = state.conversations.map((c) => {
+        if (c.id !== conversationId) return c;
+        return {
+          ...c,
+          lastMessageId: lastMessage?.id ?? '',
+          updatedAt: lastMessage?.createdAt ?? c.updatedAt,
+        };
+      });
+      return {
+        conversations: nextConversations,
+        messages: { ...state.messages, [conversationId]: remaining },
+      };
+    });
+
+    const conversation = await db.conversations.get(conversationId);
+    if (conversation) {
+      const remaining = await db.messages
+        .where('conversationId')
+        .equals(conversationId)
+        .sortBy('createdAt');
+      const lastMessage = remaining[remaining.length - 1];
+      await db.conversations.update(conversationId, {
+        lastMessageId: lastMessage?.id ?? '',
+        updatedAt: lastMessage?.createdAt ?? conversation.updatedAt,
+      });
+    }
+  },
+
+  retryMessage: async (conversationId, messageId) => {
+    const message = useChatStore
+      .getState()
+      .messages[conversationId]?.find((m) => m.id === messageId);
+    if (!message || message.status !== 'failed') return;
+
+    const payload = messageToPayload(message);
+    if (!payload) return;
+
+    await useChatStore.getState().deleteMessage(conversationId, messageId);
+    await useChatStore.getState().sendMessage(conversationId, payload);
   },
 
   sendMessage: async (conversationId, payload) => {

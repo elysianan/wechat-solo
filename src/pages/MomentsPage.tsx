@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { MomentCoverHeader } from '../components/moments/MomentCoverHeader';
 import { MomentCard } from '../components/moments/MomentCard';
 import { BottomInputSheet } from '../components/moments/BottomInputSheet';
+import { ImageLightbox } from '../components/common/ImageLightbox';
 import { useAppStore } from '../stores/useAppStore';
 import { useContactStore } from '../stores/useContactStore';
 import { useMomentStore } from '../stores/useMomentStore';
@@ -15,6 +16,8 @@ export function MomentsPage() {
   const loadMoments = useMomentStore((state) => state.loadMoments);
   const addComment = useMomentStore((state) => state.addComment);
   const [commentMomentId, setCommentMomentId] = useState<string | null>(null);
+  const [lightboxMomentId, setLightboxMomentId] = useState<string | null>(null);
+  const [lightboxImageIndex, setLightboxImageIndex] = useState(0);
 
   useEffect(() => {
     if (!loaded) loadMoments();
@@ -27,6 +30,14 @@ export function MomentsPage() {
     setCommentMomentId(null);
   };
 
+  const handleImageClick = (momentId: string, index: number) => {
+    setLightboxMomentId(momentId);
+    setLightboxImageIndex(index);
+  };
+
+  const lightboxMoment = moments.find((m) => m.id === lightboxMomentId);
+  const lightboxSrc = lightboxMoment?.images[lightboxImageIndex] ?? '';
+
   return (
     <div className="h-full overflow-y-auto bg-wechat-card pb-4" data-testid="moments-page">
       <MomentCoverHeader me={me} onBack={popPage} />
@@ -36,6 +47,7 @@ export function MomentsPage() {
             key={moment.id}
             moment={moment}
             onCommentClick={setCommentMomentId}
+            onImageClick={handleImageClick}
           />
         ))}
       </div>
@@ -43,6 +55,11 @@ export function MomentsPage() {
         visible={commentMomentId !== null}
         onSubmit={handleCommentSubmit}
         onCancel={() => setCommentMomentId(null)}
+      />
+      <ImageLightbox
+        src={lightboxSrc}
+        visible={lightboxMomentId !== null}
+        onClose={() => setLightboxMomentId(null)}
       />
     </div>
   );

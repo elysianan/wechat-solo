@@ -14,7 +14,7 @@ describe('useMomentStore', () => {
     await initializeDatabase();
     await useMomentStore.getState().loadMoments();
 
-    expect(useMomentStore.getState().moments).toHaveLength(5);
+    expect(useMomentStore.getState().moments).toHaveLength(6);
     expect(useMomentStore.getState().loaded).toBe(true);
   });
 

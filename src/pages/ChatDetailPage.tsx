@@ -26,6 +26,8 @@ export function ChatDetailPage() {
     conversationId ? state.typingConversations[conversationId] ?? false : false
   );
   const sendMessage = useChatStore((state) => state.sendMessage);
+  const deleteMessage = useChatStore((state) => state.deleteMessage);
+  const retryMessage = useChatStore((state) => state.retryMessage);
   const markConversationRead = useChatStore((state) => state.markConversationRead);
   const conversation = useChatStore((state) =>
     state.conversations.find((c) => c.id === conversationId)
@@ -37,6 +39,11 @@ export function ChatDetailPage() {
   const bottomRef = useRef<HTMLDivElement>(null);
   // 记录上一次的会话 id：进入/切换会话瞬间定位底部，同会话新消息才平滑滚动
   const prevConvRef = useRef<string | null>(null);
+  // 标记当前会话是否已完成首次定位，避免消息加载过程中触发 smooth 滚动覆盖 auto
+  const hasInitialScrolledRef = useRef(false);
+  const initialScrollTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // 记录进入会话时的消息数组引用，用于区分初始加载与新消息追加
+  const initialMessagesRef = useRef<Message[] | null>(null);
 
   useEffect(() => {
     if (conversationId) {
@@ -50,13 +57,42 @@ export function ChatDetailPage() {
     // 进入或切换会话时延迟到外层 300ms 转场结束后再瞬间定位，
     // 避免与滑入动画叠加产生回弹；同一会话内新消息到来用 smooth 平滑滚动。
     const isNewConversation = prevConvRef.current !== conversationId;
-    prevConvRef.current = conversationId;
     if (isNewConversation) {
-      const timer = setTimeout(() => {
+      hasInitialScrolledRef.current = false;
+      prevConvRef.current = conversationId;
+      initialMessagesRef.current = messages === EMPTY_MESSAGES ? null : messages;
+      if (initialScrollTimerRef.current) {
+        clearTimeout(initialScrollTimerRef.current);
+      }
+      initialScrollTimerRef.current = setTimeout(() => {
+        hasInitialScrolledRef.current = true;
         bottomRef.current?.scrollIntoView({ behavior: 'auto' });
       }, 320);
-      return () => clearTimeout(timer);
+      return () => {
+        if (initialScrollTimerRef.current) {
+          clearTimeout(initialScrollTimerRef.current);
+        }
+      };
     }
+
+    // 同一会话中消息数组变化时，判断是初始加载（数组引用从空/旧变为新的完整数组）
+    // 还是新消息追加（数组已是完整数组后再次替换）。
+    const isInitialLoad =
+      initialMessagesRef.current === null || messages === initialMessagesRef.current;
+
+    if (isInitialLoad) {
+      if (messages !== EMPTY_MESSAGES) {
+        initialMessagesRef.current = messages;
+      }
+      return;
+    }
+
+    // 新消息追加：取消延迟 auto 滚动并用 smooth 立即滚动
+    if (initialScrollTimerRef.current) {
+      clearTimeout(initialScrollTimerRef.current);
+      initialScrollTimerRef.current = null;
+    }
+    hasInitialScrolledRef.current = true;
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, isTyping, conversationId]);
 
@@ -101,6 +137,8 @@ export function ChatDetailPage() {
               isMe={message.senderId === 'me'}
               contactName={sender.name}
               contactAvatar={sender.avatar}
+              onDelete={(id) => deleteMessage(conversationId, id)}
+              onRetry={(id) => retryMessage(conversationId, id)}
             />
           );
         })}

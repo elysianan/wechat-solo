@@ -244,6 +244,19 @@ export const seedGroupMessages: Message[] = [
 
 assignLastMessageIds(seedGroupConversations, seedGroupMessages);
 
+// 朋友圈示例图片：纯色方块 SVG，避免引入额外 public 资源
+function colorImage(color: string): string {
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200"><rect width="100%" height="100%" fill="${color}"/></svg>`;
+  return `data:image/svg+xml;base64,${btoa(svg)}`;
+}
+
+const MOMENT_IMAGES = {
+  blue: colorImage('#60A5FA'),
+  green: colorImage('#4ADE80'),
+  orange: colorImage('#FB923C'),
+  purple: colorImage('#C084FC'),
+};
+
 // 预置联系人标签（与种子联系人的 tags 对齐）
 export const seedTags: Tag[] = [
   { id: 'tag-family', name: '家人', createdAt: BASE_TIME + 1 },
@@ -282,12 +295,12 @@ export const seedMoments: Moment[] = [
     likes: [{ contactId: 'buddy', createdAt: BASE_TIME - 1000 * 60 * 60 * 20 }],
     comments: [],
   },
-  // 追加带图片占位的朋友圈动态
+  // 追加带图片的朋友圈动态，覆盖 1/2/3 张图以验证网格布局
   {
     id: makeId('moment'),
     authorId: 'mom',
     content: '周末晒晒被子，舒服。☀️',
-    images: ['placeholder', 'placeholder'],
+    images: [MOMENT_IMAGES.blue, MOMENT_IMAGES.green],
     createdAt: BASE_TIME - 1000 * 60 * 60 * 12,
     likes: [],
     comments: [],
@@ -296,9 +309,18 @@ export const seedMoments: Moment[] = [
     id: makeId('moment'),
     authorId: 'boss',
     content: '团队本周目标明确，高效执行。',
-    images: ['placeholder'],
+    images: [MOMENT_IMAGES.orange],
     createdAt: BASE_TIME - 1000 * 60 * 60 * 36,
     likes: [{ contactId: 'lisa', createdAt: BASE_TIME - 1000 * 60 * 60 * 30 }],
+    comments: [],
+  },
+  {
+    id: makeId('moment'),
+    authorId: 'lisa',
+    content: '新入手的几本书，假期看起来。📚',
+    images: [MOMENT_IMAGES.purple, MOMENT_IMAGES.blue, MOMENT_IMAGES.green],
+    createdAt: BASE_TIME - 1000 * 60 * 60 * 48,
+    likes: [],
     comments: [],
   },
 ];

@@ -85,6 +85,22 @@ body {
   }
 }
 
+/* Sprint 9：朋友圈点赞弹跳动画 */
+@keyframes like-bounce {
+  0% {
+    transform: scale(1);
+  }
+  40% {
+    transform: scale(1.35);
+  }
+  70% {
+    transform: scale(0.9);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
 .animate-slide-up {
   animation: slide-up 0.2s ease-out forwards;
 }
@@ -103,4 +119,8 @@ body {
 
 .animate-pulse-ring {
   animation: pulse-ring 1.2s ease-out infinite;
+}
+
+.animate-like-bounce {
+  animation: like-bounce 0.4s ease-out forwards;
 }
