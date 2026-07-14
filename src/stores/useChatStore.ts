@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import type { Contact, Conversation, Message } from '../types';
+import type { Contact, Conversation, Message, MessagePayload } from '../types';
 import { db } from '../db/database';
 import { generateReply } from '../agents/engine';
 import type { ReplyPlan } from '../agents/types';
@@ -44,6 +44,50 @@ export function parseMentions(content: string, members: Contact[]): Contact[] {
   return mentioned;
 }
 
+// 根据发送负载构造完整 Message 对象
+function buildMessageFromPayload(
+  id: string,
+  conversationId: string,
+  payload: MessagePayload,
+  now: number
+): Message {
+  const base = {
+    id,
+    conversationId,
+    senderId: 'me' as const,
+    status: 'sending' as const,
+    createdAt: now,
+  };
+
+  switch (payload.type) {
+    case 'text':
+      return { ...base, type: 'text' as const, content: payload.content };
+    case 'image':
+      return {
+        ...base,
+        type: 'image' as const,
+        url: payload.url,
+        width: payload.width,
+        height: payload.height,
+      };
+    case 'voice':
+      return {
+        ...base,
+        type: 'voice' as const,
+        url: payload.url,
+        duration: payload.duration,
+      };
+    case 'redpacket':
+      return {
+        ...base,
+        type: 'redpacket' as const,
+        amount: payload.amount,
+        title: payload.title ?? '恭喜发财，大吉大利',
+        packetStatus: 'pending' as const,
+      };
+  }
+}
+
 interface ChatState {
   conversations: Conversation[];
   messages: Record<string, Message[]>;
@@ -51,7 +95,7 @@ interface ChatState {
   replyTimeScale: number;
   typingConversations: Record<string, boolean>;
   loadChats: () => Promise<void>;
-  sendMessage: (conversationId: string, content: string) => Promise<void>;
+  sendMessage: (conversationId: string, payload: MessagePayload) => Promise<void>;
   markConversationRead: (conversationId: string) => Promise<void>;
   updateMessageStatus: (messageId: string, status: Message['status']) => Promise<void>;
   setReplyTimeScale: (scale: number) => void;
@@ -195,9 +239,9 @@ async function receiveAgentReply(plan: ReplyPlan) {  const { conversationId, con
     id: makeMessageId(),
     conversationId,
     senderId: contactId,
-    type: 'text',
+    type: 'text' as const,
     content: reply.content,
-    status: 'sent',
+    status: 'sent' as const,
     createdAt: now + index * 500,
   }));
 
@@ -239,6 +283,9 @@ async function receiveAgentReply(plan: ReplyPlan) {  const { conversationId, con
 
 // 群聊调度：用户消息 sent→delivered（群无已读回执），成员按 @或人设概率依次回复
 async function scheduleGroupReplies(userMessage: Message, conversation: Conversation) {
+  // Sprint7：非文本消息不触发群聊 Agent 回复，仅做状态流转（由 sendMessage 单独处理）
+  if (userMessage.type !== 'text') return;
+
   const { conversationId } = userMessage;
   const timeScale = useChatStore.getState().replyTimeScale;
 
@@ -311,6 +358,21 @@ async function scheduleGroupReplies(userMessage: Message, conversation: Conversa
   }
 }
 
+// 群聊非文本消息的状态流转：只到 delivered，不触发成员回复
+function scheduleGroupDelivery(message: Message) {
+  const timeScale = useChatStore.getState().replyTimeScale;
+  setTimeout(() => {
+    useChatStore.getState().updateMessageStatus(message.id, 'sent').catch((err) => {
+      console.error('消息状态更新失败:', err);
+    });
+  }, 150 * timeScale);
+  setTimeout(() => {
+    useChatStore.getState().updateMessageStatus(message.id, 'delivered').catch((err) => {
+      console.error('消息状态更新失败:', err);
+    });
+  }, 300 * timeScale);
+}
+
 // 聊天状态：加载会话、按会话分组消息、发送消息、标记已读
 export const useChatStore = create<ChatState>((set) => ({
   conversations: [],
@@ -370,17 +432,9 @@ export const useChatStore = create<ChatState>((set) => ({
     });
   },
 
-  sendMessage: async (conversationId, content) => {
+  sendMessage: async (conversationId, payload) => {
     const now = Date.now();
-    const message: Message = {
-      id: makeMessageId(),
-      conversationId,
-      senderId: 'me',
-      type: 'text',
-      content,
-      status: 'sending',
-      createdAt: now,
-    };
+    const message = buildMessageFromPayload(makeMessageId(), conversationId, payload, now);
 
     // 将消息与会话更新放在同一个 Dexie 事务中，避免不一致
     try {
@@ -398,7 +452,7 @@ export const useChatStore = create<ChatState>((set) => ({
           ...state.messages,
           [conversationId]: [
             ...(state.messages[conversationId] || []),
-            { ...message, status: 'failed' },
+            { ...message, status: 'failed' as const },
           ],
         },
       }));
@@ -420,11 +474,30 @@ export const useChatStore = create<ChatState>((set) => ({
       };
     });
 
-    // 为当前会话生成 Agent 回复计划
-    try {
-      const conversation = await db.conversations.get(conversationId);
-      if (!conversation) return;
+    // 非文本消息只做状态流转，不触发 Agent 回复
+    const conversation = await db.conversations.get(conversationId);
+    if (!conversation) return;
 
+    const timeScale = useChatStore.getState().replyTimeScale;
+    if (payload.type !== 'text') {
+      if (conversation.type === 'group') {
+        scheduleGroupDelivery(message);
+      } else {
+        scheduleStatusFlow(message, {
+          conversationId,
+          contactId: conversation.contactId ?? '',
+          readUserMessageIds: [message.id],
+          readDelayMs: 1200 * timeScale,
+          typingDurationMs: 0,
+          replyDelayMs: 600 * timeScale,
+          replyMessages: [],
+        });
+      }
+      return;
+    }
+
+    // 文本消息按原流程生成 Agent 回复
+    try {
       // 群聊走群调度，单聊走原有单聊流程
       if (conversation.type === 'group') {
         await scheduleGroupReplies(message, conversation);
@@ -440,7 +513,6 @@ export const useChatStore = create<ChatState>((set) => ({
       ]);
       if (!contact) return;
 
-      const timeScale = useChatStore.getState().replyTimeScale;
       const recentMessages = useChatStore.getState().messages[conversationId] || [];
       const plan = generateReply({
         contact,

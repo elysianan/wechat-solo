@@ -105,7 +105,7 @@ export function ChatDetailPage() {
         <div ref={bottomRef} />
       </div>
       <MessageInput
-        onSend={(text) => sendMessage(conversationId, text)}
+        onSend={(payload) => sendMessage(conversationId, payload)}
         members={
           isGroup
             ? contacts

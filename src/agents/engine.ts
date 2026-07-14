@@ -1,7 +1,12 @@
 import type { GenerateReplyInput, ReplyPlan } from './types';
-import type { ReplyRule } from '../types';
+import type { Message, ReplyRule } from '../types';
 import { getTimeWindow } from '../utils/timeWindow';
 import { STORY_CHAINS } from '../data/personas';
+
+// 提取消息的文本内容：非文本消息返回空串，供引擎匹配与防重复使用
+function messageText(message: Message): string {
+  return message.type === 'text' ? message.content : '';
+}
 
 // 生成 [min, max] 之间的随机数
 function randomBetween(min: number, max: number): number {
@@ -137,6 +142,21 @@ export function generateReply(input: GenerateReplyInput): ReplyPlan {
   const forceReply = options?.forceReply ?? false;
   const behavior = contact.persona.behavior;
 
+  // Sprint7：Agent 引擎当前只处理文本消息，非文本消息直接返回空计划
+  if (userMessage.type !== 'text') {
+    return {
+      conversationId: userMessage.conversationId,
+      contactId: contact.id,
+      readUserMessageIds: recentMessages
+        .filter((message) => message.senderId === 'me')
+        .map((message) => message.id),
+      readDelayMs: 0,
+      typingDurationMs: 0,
+      replyDelayMs: 0,
+      replyMessages: [],
+    };
+  }
+
   // 计算时间线
   const baseDelay = randomBetween(behavior.replyDelayMin, behavior.replyDelayMax) * timeScale;
   const showTyping = Math.random() < behavior.typingIndicatorChance;
@@ -234,7 +254,7 @@ export function generateReply(input: GenerateReplyInput): ReplyPlan {
 
   // 选择规则与回复文本
   const now = options?.now ?? Date.now();
-  const recentContents = recentMessages.map((message) => message.content);
+  const recentContents = recentMessages.map(messageText);
   const match = selectRule(
     contact.persona.rules,
     userMessage.content,

@@ -86,4 +86,33 @@ describe('ChatDetailPage', () => {
       expect(scrollMock).toHaveBeenCalledWith({ behavior: 'smooth' });
     });
   });
+
+  it('渲染种子数据中的图片 / 语音 / 红包消息', async () => {
+    const conversation = useChatStore
+      .getState()
+      .conversations.find((c) => c.contactId === 'mom')!;
+    useAppStore.setState({ pageStack: [{ type: 'chat-detail', conversationId: conversation.id }] });
+    render(<ChatDetailPage />);
+    await waitFor(() => {
+      expect(screen.getByTestId('image-message')).toBeInTheDocument();
+    });
+  });
+
+  it('发送红包消息后聊天详情出现红包气泡', async () => {
+    const conversation = useChatStore.getState().conversations[0];
+    useAppStore.setState({ pageStack: [{ type: 'chat-detail', conversationId: conversation.id }] });
+    render(<ChatDetailPage />);
+    await waitFor(() => {
+      expect(screen.getByTestId('message-input')).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByTestId('tool-button'));
+    fireEvent.click(screen.getByTestId('tool-redpacket-button'));
+    fireEvent.change(screen.getByTestId('redpacket-amount-input'), { target: { value: '6.66' } });
+    fireEvent.click(screen.getByTestId('redpacket-send-button'));
+
+    await waitFor(() => {
+      expect(screen.getByTestId('redpacket-message')).toBeInTheDocument();
+    });
+  });
 });

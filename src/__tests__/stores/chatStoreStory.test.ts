@@ -41,7 +41,7 @@ describe('chatStore 剧情链持久化', () => {
   it('触发剧情后 storyProgress 持久化到 IndexedDB 与 store', async () => {
     vi.spyOn(Math, 'random').mockReturnValue(0); // 必触发剧情
 
-    await useChatStore.getState().sendMessage(momConversation().id, '我想去相亲看看');
+    await useChatStore.getState().sendMessage(momConversation().id, { type: 'text', content: '我想去相亲看看' });
     await vi.runAllTimersAsync();
 
     const expected = { chainId: 'mom-marriage', step: 0 };
@@ -53,9 +53,9 @@ describe('chatStore 剧情链持久化', () => {
   it('剧情推进后 step 更新持久化', async () => {
     vi.spyOn(Math, 'random').mockReturnValue(0);
 
-    await useChatStore.getState().sendMessage(momConversation().id, '我想去相亲看看');
+    await useChatStore.getState().sendMessage(momConversation().id, { type: 'text', content: '我想去相亲看看' });
     await vi.runAllTimersAsync();
-    await useChatStore.getState().sendMessage(momConversation().id, '还行吧');
+    await useChatStore.getState().sendMessage(momConversation().id, { type: 'text', content: '还行吧' });
     await vi.runAllTimersAsync();
 
     const fromDb = await db.conversations.get(momConversation().id);
@@ -68,7 +68,7 @@ describe('chatStore 剧情链持久化', () => {
       storyProgress: { chainId: 'mom-marriage', step: 4 },
     });
 
-    await useChatStore.getState().sendMessage(momConversation().id, '好的妈');
+    await useChatStore.getState().sendMessage(momConversation().id, { type: 'text', content: '好的妈' });
     await vi.runAllTimersAsync();
 
     const fromDb = await db.conversations.get(momConversation().id);

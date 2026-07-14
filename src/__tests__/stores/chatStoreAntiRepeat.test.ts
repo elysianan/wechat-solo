@@ -40,7 +40,7 @@ describe('chatStore session 防重复接线', () => {
   const buddyReplies = (conversationId: string): string[] =>
     (useChatStore.getState().messages[conversationId] ?? [])
       .filter((m) => m.senderId === 'buddy')
-      .map((m) => m.content);
+      .map((m) => (m.type === 'text' ? m.content : ''));
 
   it('单聊: 台词池内连续回复不重复(3 轮验证, 每轮 reset 后发 3 条)', async () => {
     const conversation = useChatStore
@@ -52,7 +52,7 @@ describe('chatStore session 防重复接线', () => {
       __resetSessionState();
       const before = buddyReplies(conversation.id).length;
       for (let i = 0; i < 3; i++) {
-        await useChatStore.getState().sendMessage(conversation.id, '晚上开黑吗');
+        await useChatStore.getState().sendMessage(conversation.id, { type: 'text', content: '晚上开黑吗' });
         await vi.runAllTimersAsync();
       }
       const slice = buddyReplies(conversation.id).slice(before);
@@ -67,9 +67,9 @@ describe('chatStore session 防重复接线', () => {
     const before = buddyReplies(work.id).length;
 
     // 两条都命中 buddy-game 规则, 防重复下阿杰两次回复不同
-    await useChatStore.getState().sendMessage(work.id, '@阿杰 开黑吗');
+    await useChatStore.getState().sendMessage(work.id, { type: 'text', content: '@阿杰 开黑吗' });
     await vi.runAllTimersAsync();
-    await useChatStore.getState().sendMessage(work.id, '@阿杰 继续开黑');
+    await useChatStore.getState().sendMessage(work.id, { type: 'text', content: '@阿杰 继续开黑' });
     await vi.runAllTimersAsync();
 
     const replies = buddyReplies(work.id).slice(before);

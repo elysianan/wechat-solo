@@ -24,6 +24,25 @@ export class WeChatSoloDB extends Dexie {
     this.version(2).stores({
       tags: 'id, name',
     });
+    // v3：消息类型拆分为 discriminated union，迁移旧消息确保 type 字段
+    this.version(3).stores({
+      me: 'id',
+      contacts: 'id',
+      conversations: 'id, updatedAt',
+      messages: 'id, conversationId, createdAt',
+      moments: 'id, createdAt',
+      settings: 'id',
+      tags: 'id, name',
+    }).upgrade((tx) => {
+      return tx.table('messages').toCollection().modify((msg: Record<string, unknown>) => {
+        if (!msg.type) {
+          msg.type = 'text';
+        }
+        if (msg.type === 'text' && typeof msg.content !== 'string') {
+          msg.content = String(msg.content ?? '');
+        }
+      });
+    });
   }
 }
 

@@ -1,5 +1,5 @@
-import { Check, CheckCheck } from 'lucide-react';
-import type { Message, MessageStatus } from '../../types';
+import { Check, CheckCheck, Gift, Image as ImageIcon, Mic } from 'lucide-react';
+import type { Message, MessageStatus, RedPacketMessage } from '../../types';
 import { assetUrl } from '../../utils/asset';
 
 interface MessageBubbleProps {
@@ -26,6 +26,80 @@ function StatusIcon({ status }: { status: MessageStatus }) {
   return <span className="text-red-500 text-xs font-bold">!</span>;
 }
 
+function ImageBubble({ url }: { url: string }) {
+  const src = url.startsWith('blob:') || url.startsWith('http') || url.startsWith('data:')
+    ? url
+    : assetUrl(url);
+  return (
+    <img
+      src={src}
+      alt="图片"
+      className="max-w-full rounded-lg object-cover max-h-[200px]"
+      data-testid="image-message"
+    />
+  );
+}
+
+function VoiceBubble({ duration, isMe }: { duration: number; isMe: boolean }) {
+  return (
+    <div
+      className={`flex items-center gap-2 min-w-[80px] ${isMe ? 'flex-row-reverse' : ''}`}
+      data-testid="voice-message"
+    >
+      <Mic size={18} />
+      <span>{duration}"</span>
+    </div>
+  );
+}
+
+function RedPacketBubble({ message }: { message: RedPacketMessage }) {
+  const isOpened = message.packetStatus === 'opened';
+  return (
+    <div
+      className={`flex items-center gap-3 min-w-[180px] rounded-md p-3 ${
+        isOpened ? 'bg-red-300' : 'bg-red-500'
+      } text-white`}
+      data-testid="redpacket-message"
+    >
+      <Gift size={28} />
+      <div className="flex-1 min-w-0">
+        <div className="font-medium truncate">{message.title}</div>
+        <div className="text-xs opacity-90">{isOpened ? '已领取' : '微信红包'}</div>
+      </div>
+      <div className="text-lg font-bold">¥{message.amount.toFixed(2)}</div>
+    </div>
+  );
+}
+
+function renderContent(message: Message, isMe: boolean) {
+  switch (message.type) {
+    case 'text':
+      return message.content;
+    case 'image':
+      return <ImageBubble url={message.url} />;
+    case 'voice':
+      return <VoiceBubble duration={message.duration} isMe={isMe} />;
+    case 'redpacket':
+      return <RedPacketBubble message={message} />;
+    case 'transfer':
+      return (
+        <span className="flex items-center gap-1">
+          <ImageIcon size={16} />
+          [转账] ¥{message.amount.toFixed(2)}
+        </span>
+      );
+    case 'location':
+      return (
+        <span className="flex items-center gap-1">
+          <ImageIcon size={16} />
+          [位置] {message.address}
+        </span>
+      );
+    default:
+      return null;
+  }
+}
+
 // 单条聊天消息气泡：左侧显示对方头像和昵称，右侧显示自己消息和状态
 export function MessageBubble({ message, isMe, contactName, contactAvatar }: MessageBubbleProps) {
   return (
@@ -50,7 +124,7 @@ export function MessageBubble({ message, isMe, contactName, contactAvatar }: Mes
           }`}
           data-testid="message-content"
         >
-          {message.content}
+          {renderContent(message, isMe)}
         </div>
         {isMe && (
           <div className="flex items-center mt-1 gap-0.5" data-testid="message-status">
