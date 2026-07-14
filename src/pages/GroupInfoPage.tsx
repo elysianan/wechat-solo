@@ -38,7 +38,7 @@ export function GroupInfoPage() {
           <img
             src={assetUrl(me?.avatar)}
             alt={me?.nickname}
-            className="w-12 h-12 rounded-md bg-wechat-bg object-cover"
+            className="w-12 h-12 rounded bg-wechat-bg object-cover"
           />
           <span className="text-xs text-wechat-text-secondary mt-1 truncate max-w-full">
             {me?.nickname ?? '我'}
@@ -54,7 +54,7 @@ export function GroupInfoPage() {
             <img
               src={assetUrl(member.avatar)}
               alt={member.name}
-              className="w-12 h-12 rounded-md bg-wechat-bg object-cover"
+              className="w-12 h-12 rounded bg-wechat-bg object-cover"
             />
             <span className="text-xs text-wechat-text-secondary mt-1 truncate max-w-full">
               {member.name}

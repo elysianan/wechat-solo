@@ -40,16 +40,24 @@ export function ChatDetailPage() {
 
   useEffect(() => {
     if (conversationId) {
-      markConversationRead(conversationId);
+      markConversationRead(conversationId).catch(() => {
+        // 页面快速切换/数据库重置时可能触发，忽略即可
+      });
     }
   }, [conversationId, markConversationRead]);
 
   useEffect(() => {
-    // 进入或切换会话时用 auto 瞬间定位，避免与外层 300ms 滑入动画叠加产生回弹；
-    // 同一会话内新消息到来才用 smooth 平滑滚动
+    // 进入或切换会话时延迟到外层 300ms 转场结束后再瞬间定位，
+    // 避免与滑入动画叠加产生回弹；同一会话内新消息到来用 smooth 平滑滚动。
     const isNewConversation = prevConvRef.current !== conversationId;
-    bottomRef.current?.scrollIntoView({ behavior: isNewConversation ? 'auto' : 'smooth' });
     prevConvRef.current = conversationId;
+    if (isNewConversation) {
+      const timer = setTimeout(() => {
+        bottomRef.current?.scrollIntoView({ behavior: 'auto' });
+      }, 320);
+      return () => clearTimeout(timer);
+    }
+    bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, isTyping, conversationId]);
 
   // 未选择会话时不渲染（App.tsx 始终挂载该组件用于转场动画）

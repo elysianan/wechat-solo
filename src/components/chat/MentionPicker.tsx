@@ -16,12 +16,12 @@ export function MentionPicker({ visible, members, onSelect, onClose }: MentionPi
 
   return (
     <div
-      className="fixed inset-0 z-20 flex items-end justify-center bg-black/30"
+      className="fixed inset-0 z-20 flex items-end justify-center bg-black/30 animate-fade-scale"
       data-testid="mention-picker-mask"
       onClick={onClose}
     >
       <div
-        className="w-full max-w-phone bg-wechat-card rounded-t-lg max-h-[40%] overflow-y-auto"
+        className="w-full max-w-phone bg-wechat-card rounded-t-lg max-h-[40%] overflow-y-auto animate-slide-up"
         data-testid="mention-picker"
         onClick={(e) => e.stopPropagation()}
       >
@@ -32,7 +32,7 @@ export function MentionPicker({ visible, members, onSelect, onClose }: MentionPi
           <button
             key={member.id}
             onClick={() => onSelect(member.name)}
-            className="w-full text-left px-4 py-3 text-sm text-wechat-text-primary border-b border-wechat-divider last:border-b-0 active:bg-wechat-bg"
+            className="w-full text-left px-4 py-3 text-sm text-wechat-text-primary border-b border-wechat-divider last:border-b-0 active:bg-wechat-bg active:scale-[0.98] transition-transform duration-100"
             data-testid={`mention-member-${member.id}`}
           >
             {member.name}

@@ -15,7 +15,7 @@ export function TypingIndicator({ avatar, name }: TypingIndicatorProps) {
       <img
         src={assetUrl(avatar)}
         alt={name}
-        className="w-10 h-10 rounded-md bg-gray-200 object-cover mr-3 flex-shrink-0"
+        className="w-10 h-10 rounded bg-wechat-bg object-cover mr-3 flex-shrink-0"
       />
       <div className="flex flex-col items-start max-w-[70%]">
         <span className="text-xs text-wechat-text-secondary mb-1">{name}</span>
@@ -24,16 +24,16 @@ export function TypingIndicator({ avatar, name }: TypingIndicatorProps) {
             <span className="text-xs text-wechat-text-secondary">对方正在输入</span>
             <span className="inline-flex gap-0.5">
               <span
-                className="w-1 h-1 bg-gray-400 rounded-full animate-bounce"
+                className="w-1 h-1 bg-wechat-text-secondary rounded-full animate-typing-pulse"
                 style={{ animationDelay: '0ms' }}
               />
               <span
-                className="w-1 h-1 bg-gray-400 rounded-full animate-bounce"
-                style={{ animationDelay: '150ms' }}
+                className="w-1 h-1 bg-wechat-text-secondary rounded-full animate-typing-pulse"
+                style={{ animationDelay: '200ms' }}
               />
               <span
-                className="w-1 h-1 bg-gray-400 rounded-full animate-bounce"
-                style={{ animationDelay: '300ms' }}
+                className="w-1 h-1 bg-wechat-text-secondary rounded-full animate-typing-pulse"
+                style={{ animationDelay: '400ms' }}
               />
             </span>
           </div>

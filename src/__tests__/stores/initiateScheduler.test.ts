@@ -44,7 +44,7 @@ describe('主动发起对话调度器', () => {
   // 推进一个检查周期(60s)并 flush 真实事件循环, 等待注入的异步链完成
   const tick = async () => {
     await vi.advanceTimersByTimeAsync(60_000);
-    await new Promise((resolve) => setTimeout(resolve, 30));
+    await new Promise((resolve) => setTimeout(resolve, 100));
   };
 
   const momConversation = () =>
@@ -100,7 +100,7 @@ describe('主动发起对话调度器', () => {
 
     useChatStore.getState().stopInitiateScheduler();
     await vi.advanceTimersByTimeAsync(300_000);
-    await new Promise((resolve) => setTimeout(resolve, 30));
+    await new Promise((resolve) => setTimeout(resolve, 100));
 
     expect(momMessages().length).toBe(before);
   });

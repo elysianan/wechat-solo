@@ -17,7 +17,7 @@ export function MomentImageGrid({ images }: MomentImageGridProps) {
       {images.map((_, index) => (
         <div
           key={index}
-          className="aspect-square bg-gradient-to-br from-gray-200 to-gray-300 rounded"
+          className="aspect-square bg-wechat-bg rounded"
           data-testid="moment-image"
         />
       ))}

@@ -19,10 +19,10 @@ export function ContactListSection({ letter, contacts, onContactClick }: Contact
           <button
             key={contact.id}
             onClick={() => onContactClick(contact.id)}
-            className="w-full flex items-center px-4 py-3 border-b border-wechat-divider last:border-b-0 active:bg-wechat-bg"
+            className="w-full flex items-center px-4 py-3 border-b border-wechat-divider last:border-b-0 active:bg-wechat-bg active:scale-[0.98] transition-transform duration-100"
             data-testid="contact-list-item"
           >
-            <img src={assetUrl(contact.avatar)} alt={contact.name} className="w-10 h-10 rounded-md bg-gray-200 object-cover" />
+            <img src={assetUrl(contact.avatar)} alt={contact.name} className="w-10 h-10 rounded bg-wechat-bg object-cover" />
             <span className="ml-3 text-base text-wechat-text-primary">{contact.name}</span>
           </button>
         ))}

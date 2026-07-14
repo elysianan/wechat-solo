@@ -65,6 +65,8 @@ describe('ChatDetailPage', () => {
       expect(screen.getAllByTestId('message-bubble').length).toBeGreaterThan(0);
     });
     const scrollMock = HTMLElement.prototype.scrollIntoView as Mock;
+    // 首次滚动延迟到外层 300ms 转场结束后
+    await new Promise((resolve) => setTimeout(resolve, 350));
     expect(scrollMock).toHaveBeenCalledWith({ behavior: 'auto' });
     expect(scrollMock).not.toHaveBeenCalledWith({ behavior: 'smooth' });
   });

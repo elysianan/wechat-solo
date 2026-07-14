@@ -112,7 +112,7 @@ export function TagDetailPage() {
             <img
               src={assetUrl(member.avatar)}
               alt={member.name}
-              className="w-10 h-10 rounded-md bg-wechat-bg object-cover"
+              className="w-10 h-10 rounded bg-wechat-bg object-cover"
             />
             <span className="ml-3 text-base text-wechat-text-primary flex-1">{member.name}</span>
             <button
@@ -147,13 +147,13 @@ export function TagDetailPage() {
               <button
                 key={candidate.id}
                 onClick={() => handleAdd(candidate.id, candidate.tags)}
-                className="w-full flex items-center px-4 py-3 active:bg-wechat-bg"
+                className="w-full flex items-center px-4 py-3 active:bg-wechat-bg active:scale-[0.98] transition-transform duration-100"
                 data-testid={`tag-candidate-${candidate.id}`}
               >
                 <img
                   src={assetUrl(candidate.avatar)}
                   alt={candidate.name}
-                  className="w-10 h-10 rounded-md bg-wechat-bg object-cover"
+                  className="w-10 h-10 rounded bg-wechat-bg object-cover"
                 />
                 <span className="ml-3 text-base text-wechat-text-primary">{candidate.name}</span>
               </button>

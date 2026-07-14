@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Wallet, Star, Image, CreditCard, Smile, Settings } from 'lucide-react';
+import { Wallet, Star, Image, CreditCard, Smile, Settings, QrCode, ChevronRight } from 'lucide-react';
 import { MenuListItem } from '../components/me/MenuListItem';
 import { WeChatToast } from '../components/common/WeChatToast';
 import { useAppStore } from '../stores/useAppStore';
@@ -19,21 +19,24 @@ export function MePage() {
       {/* 个人信息卡：点击进入编辑 */}
       <button
         onClick={navigateToProfileEdit}
-        className="w-full flex items-center bg-wechat-card px-4 pt-10 pb-5 active:bg-wechat-bg"
+        className="w-full flex items-center bg-wechat-card px-4 pt-10 pb-5 active:bg-wechat-bg active:scale-[0.98] transition-transform duration-100"
         data-testid="me-profile-card"
       >
         <img
           src={assetUrl(me?.avatar)}
           alt={me?.nickname}
-          className="w-16 h-16 rounded-md object-cover bg-wechat-bg"
+          className="w-16 h-16 rounded object-cover bg-wechat-bg"
         />
         <div className="ml-4 flex-1 text-left">
-          <div className="text-lg font-medium text-wechat-text-primary">{me?.nickname ?? '我'}</div>
-          <div className="text-sm text-wechat-text-secondary mt-1">
+          <div className="text-[17px] font-medium text-wechat-text-primary">{me?.nickname ?? '我'}</div>
+          <div className="text-[13px] text-wechat-text-secondary mt-1">
             微信号：{me?.wechatId ?? '-'}
           </div>
         </div>
-        <span className="text-wechat-text-secondary text-sm">›</span>
+        <div className="flex items-center text-wechat-text-secondary">
+          <QrCode size={18} className="mr-2" />
+          <ChevronRight size={20} />
+        </div>
       </button>
 
       {/* 第一组：支付 */}

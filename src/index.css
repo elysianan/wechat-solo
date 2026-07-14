@@ -20,10 +20,87 @@
 }
 
 body {
-  @apply bg-gray-100;
+  @apply bg-wechat-bg;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
 }
 
 #root {
-  @apply mx-auto max-w-phone min-h-screen bg-white shadow-xl;
+  @apply mx-auto max-w-phone h-screen bg-wechat-bg shadow-xl;
+}
+
+/* Sprint 8：共享动画 keyframes */
+@keyframes slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fade-scale {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes message-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes typing-pulse {
+  0%,
+  100% {
+    opacity: 0.3;
+    transform: scale(0.8);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes pulse-ring {
+  0% {
+    transform: scale(0.8);
+    opacity: 0.6;
+  }
+  100% {
+    transform: scale(1.6);
+    opacity: 0;
+  }
+}
+
+.animate-slide-up {
+  animation: slide-up 0.2s ease-out forwards;
+}
+
+.animate-fade-scale {
+  animation: fade-scale 0.2s ease-out forwards;
+}
+
+.animate-message-in {
+  animation: message-in 0.25s ease-out forwards;
+}
+
+.animate-typing-pulse {
+  animation: typing-pulse 1.2s ease-in-out infinite;
+}
+
+.animate-pulse-ring {
+  animation: pulse-ring 1.2s ease-out infinite;
 }

@@ -38,7 +38,7 @@ export function MomentCard({ moment, onCommentClick }: MomentCardProps) {
   return (
     <div className="px-4 py-4 border-b border-wechat-divider bg-wechat-card" data-testid="moment-card">
       <div className="flex">
-        <img src={assetUrl(author.avatar)} alt={author.name} className="w-10 h-10 rounded-md bg-gray-200 object-cover" />
+        <img src={assetUrl(author.avatar)} alt={author.name} className="w-10 h-10 rounded bg-wechat-bg object-cover" />
         <div className="ml-3 flex-1">
           <div className="text-base font-medium text-wechat-text-primary">{author.name}</div>
           <div className="text-sm text-wechat-text-primary mt-1">{moment.content}</div>
@@ -98,7 +98,7 @@ export function MomentCard({ moment, onCommentClick }: MomentCardProps) {
                           deleteComment(moment.id, comment.id);
                           setActiveCommentId(null);
                         }}
-                        className="ml-2 text-xs text-white bg-gray-700 px-2 py-0.5 rounded"
+                        className="ml-2 text-xs text-white bg-wechat-text-secondary px-2 py-0.5 rounded"
                         data-testid="comment-delete-button"
                       >
                         删除

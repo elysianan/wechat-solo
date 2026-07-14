@@ -12,7 +12,7 @@ export function Switch({ checked, onChange, testId }: SwitchProps) {
       aria-checked={checked}
       onClick={() => onChange(!checked)}
       className={`relative w-12 h-7 rounded-full transition-colors ${
-        checked ? 'bg-wechat-green' : 'bg-gray-300'
+        checked ? 'bg-wechat-green' : 'bg-wechat-divider'
       }`}
       data-testid={testId}
     >

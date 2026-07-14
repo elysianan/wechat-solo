@@ -73,7 +73,7 @@ export function ProfileEditPage() {
         <img
           src={assetUrl(me?.avatar)}
           alt="头像"
-          className="w-14 h-14 rounded-md object-cover bg-wechat-bg"
+          className="w-14 h-14 rounded object-cover bg-wechat-bg"
         />
       </div>
 
@@ -83,7 +83,7 @@ export function ProfileEditPage() {
           <button
             key={field}
             onClick={() => setEditing({ field, value: me?.[field] ?? '' })}
-            className="w-full flex items-center px-4 py-3 active:bg-wechat-bg"
+            className="w-full flex items-center px-4 py-3 active:bg-wechat-bg active:scale-[0.98] transition-transform duration-100"
             data-testid={`profile-field-${field}`}
           >
             <span className="text-base text-wechat-text-primary flex-1 text-left">
