@@ -168,7 +168,7 @@ interface ChatState {
   updateMessageStatus: (messageId: string, status: Message['status']) => Promise<void>;
   updateTransferStatus: (
     messageId: string,
-    status: TransferMessage['transferStatus']
+    status: 'received' | 'refunded'
   ) => Promise<void>;
   deleteMessage: (conversationId: string, messageId: string) => Promise<void>;
   retryMessage: (conversationId: string, messageId: string) => Promise<void>;
@@ -532,7 +532,7 @@ export const useChatStore = create<ChatState>((set) => ({
     });
   },
 
-  updateTransferStatus: async (messageId, status) => {
+  updateTransferStatus: async (messageId, status: 'received' | 'refunded') => {
     const now = Date.now();
     try {
       // 使用 modify 回调在类型收窄后更新字段，避免 unsafe cast
