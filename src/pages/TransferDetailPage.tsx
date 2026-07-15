@@ -37,8 +37,14 @@ export function TransferDetailPage() {
   const contact = contacts.find((c) => c.id === (conversation?.contactId ?? message.senderId));
   const isMeReceived = message.senderId !== 'me';
 
-  const handleReceive = () => updateTransferStatus(message.id, 'received');
-  const handleRefund = () => updateTransferStatus(message.id, 'refunded');
+  const handleReceive = async () => {
+    await updateTransferStatus(message.id, 'received');
+    popPage();
+  };
+  const handleRefund = async () => {
+    await updateTransferStatus(message.id, 'refunded');
+    popPage();
+  };
 
   return (
     <div className="h-full bg-wechat-bg flex flex-col" data-testid="transfer-detail-page">

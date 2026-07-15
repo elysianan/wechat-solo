@@ -20,6 +20,12 @@ describe('TransferMessageCard', () => {
     expect(screen.getByText('¥88.00')).toBeInTheDocument();
   });
 
+  it('不使用硬编码的白色文本样式', () => {
+    render(<TransferMessageCard message={baseMessage} isMe={false} />);
+    const card = screen.getByTestId('transfer-message-card');
+    expect(card.querySelector('.text-white')).not.toBeInTheDocument();
+  });
+
   it('自己发出的待收款显示「待对方收款」', () => {
     render(<TransferMessageCard message={baseMessage} isMe />);
     expect(screen.getByText('待对方收款')).toBeInTheDocument();

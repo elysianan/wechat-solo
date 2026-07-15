@@ -234,6 +234,12 @@ describe('useChatStore agent flow', () => {
   });
 
   it('更新转账状态为已收款', async () => {
+    // 避免自动收款/退还把 pending 状态覆盖掉
+    await db.contacts.where('id').equals('mom').modify((contact) => {
+      contact.persona.behavior.transferAcceptChance = 0;
+      contact.persona.behavior.transferRefundChance = 0;
+    });
+
     await useChatStore.getState().loadChats();
     const conversation = useChatStore.getState().conversations.find((c) => c.contactId === 'mom')!;
     await useChatStore.getState().sendMessage(conversation.id, { type: 'transfer', amount: 88 });

@@ -26,11 +26,11 @@ export function TransferMessageCard({ message, isMe }: TransferMessageCardProps)
       data-testid="transfer-message-card"
     >
       <div className="flex-shrink-0">
-        <Banknote size={32} className="text-white" />
+        <Banknote size={32} className="text-current" />
       </div>
       <div className="flex-1 min-w-0">
-        <div className="text-lg font-medium text-white truncate">¥{message.amount.toFixed(2)}</div>
-        <div className="text-xs text-white/80 truncate">{statusText(message.transferStatus, isMe)}</div>
+        <div className="text-lg font-medium text-current truncate">¥{message.amount.toFixed(2)}</div>
+        <div className="text-xs text-current/80 truncate">{statusText(message.transferStatus, isMe)}</div>
       </div>
     </div>
   );

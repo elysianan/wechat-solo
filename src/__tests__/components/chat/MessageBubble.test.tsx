@@ -191,6 +191,22 @@ describe('MessageBubble', () => {
     expect(screen.getByText('腾讯大厦')).toBeInTheDocument();
   });
 
+  it('点击位置消息卡片显示暂未接入真实地图提示', () => {
+    const message: LocationMessage = {
+      id: 'm1',
+      conversationId: 'c1',
+      senderId: 'me',
+      type: 'location',
+      name: '腾讯大厦',
+      address: '深圳市南山区',
+      status: 'sent',
+      createdAt: Date.now(),
+    };
+    render(<MessageBubble message={message} isMe contactName="Lisa" contactAvatar="/avatar.svg" />);
+    fireEvent.click(screen.getByTestId('location-message-card'));
+    expect(screen.getByTestId('wechat-toast')).toHaveTextContent('暂未接入真实地图');
+  });
+
   it('渲染名片消息卡片并可点击跳转', () => {
     const message: ContactCardMessage = {
       id: 'm1',

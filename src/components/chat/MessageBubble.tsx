@@ -4,6 +4,7 @@ import type { Message, MessageStatus, RedPacketMessage } from '../../types';
 import { assetUrl } from '../../utils/asset';
 import { useAppStore } from '../../stores/useAppStore';
 import { ImageLightbox } from '../common/ImageLightbox';
+import { WeChatToast } from '../common/WeChatToast';
 import { MessageContextMenu } from './MessageContextMenu';
 import { LocationMessageCard } from './LocationMessageCard';
 import { ContactCardMessage } from './ContactCardMessage';
@@ -130,7 +131,8 @@ function renderContent(
     onClick: () => void;
   },
   onContactCardClick?: () => void,
-  onTransferClick?: () => void
+  onTransferClick?: () => void,
+  onLocationClick?: () => void
 ) {
   switch (message.type) {
     case 'text':
@@ -156,7 +158,7 @@ function renderContent(
         </div>
       );
     case 'location':
-      return <LocationMessageCard message={message} />;
+      return <LocationMessageCard message={message} onClick={onLocationClick} />;
     case 'contact_card':
       return <ContactCardMessage message={message} onClick={onContactCardClick} />;
     default:
@@ -195,6 +197,7 @@ export function MessageBubble({
   const [lightboxVisible, setLightboxVisible] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const [playedSeconds, setPlayedSeconds] = useState(0);
+  const [toastVisible, setToastVisible] = useState(false);
   const longPressTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const voiceTimer = useRef<ReturnType<typeof setInterval> | null>(null);
 
@@ -257,6 +260,10 @@ export function MessageBubble({
     if (message.type === 'transfer') {
       navigateToTransferDetail(message.id);
     }
+  };
+
+  const handleLocationClick = () => {
+    setToastVisible(true);
   };
 
   const handlePointerDown = (e: React.PointerEvent) => {
@@ -375,7 +382,7 @@ export function MessageBubble({
                 isPlaying,
                 playedSeconds,
                 onClick: handleVoiceClick,
-              }, handleContactCardClick, handleTransferClick)}
+              }, handleContactCardClick, handleTransferClick, handleLocationClick)}
             </div>
           </div>
         </div>
@@ -395,6 +402,12 @@ export function MessageBubble({
         y={menuPos.y}
         items={menuItems}
         onClose={() => setMenuVisible(false)}
+      />
+
+      <WeChatToast
+        message="暂未接入真实地图"
+        visible={toastVisible}
+        onClose={() => setToastVisible(false)}
       />
     </>
   );

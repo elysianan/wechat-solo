@@ -76,11 +76,12 @@ describe('TransferDetailPage', () => {
     expect(screen.getByText('收款')).toBeInTheDocument();
   });
 
-  it('点击收款后调用 updateTransferStatus', async () => {
+  it('点击收款后调用 updateTransferStatus 并返回', async () => {
     const updateTransferStatus = vi.fn();
+    const popPage = vi.fn();
     mockAppStore({
       pageStack: [{ type: 'transfer-detail', messageId: 'm1' }],
-      popPage: vi.fn(),
+      popPage,
     });
     mockChatStore({
       messages: {
@@ -106,13 +107,15 @@ describe('TransferDetailPage', () => {
     await waitFor(() => {
       expect(updateTransferStatus).toHaveBeenCalledWith('m1', 'received');
     });
+    expect(popPage).toHaveBeenCalled();
   });
 
-  it('点击退还后调用 updateTransferStatus', async () => {
+  it('点击退还后调用 updateTransferStatus 并返回', async () => {
     const updateTransferStatus = vi.fn();
+    const popPage = vi.fn();
     mockAppStore({
       pageStack: [{ type: 'transfer-detail', messageId: 'm1' }],
-      popPage: vi.fn(),
+      popPage,
     });
     mockChatStore({
       messages: {
@@ -139,6 +142,7 @@ describe('TransferDetailPage', () => {
     await waitFor(() => {
       expect(updateTransferStatus).toHaveBeenCalledWith('m1', 'refunded');
     });
+    expect(popPage).toHaveBeenCalled();
   });
 
   it('已收款状态显示已收款和完成时间', () => {

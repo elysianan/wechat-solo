@@ -15,6 +15,17 @@ const contacts: Contact[] = [
     persona: {} as Contact['persona'],
     isOnline: true,
   },
+  {
+    id: 'me',
+    name: '我自己',
+    avatar: '/avatar-me.svg',
+    wechatId: 'wxid_me',
+    region: '中国 深圳',
+    signature: '',
+    tags: [],
+    persona: {} as Contact['persona'],
+    isOnline: true,
+  },
 ];
 
 describe('ContactPickerSheet', () => {
@@ -29,6 +40,11 @@ describe('ContactPickerSheet', () => {
     render(<ContactPickerSheet visible contacts={contacts} onSelect={onSelect} onClose={vi.fn()} />);
     fireEvent.click(screen.getByText('王小明'));
     expect(onSelect).toHaveBeenCalledWith(contacts[0]);
+  });
+
+  it('列表中排除当前用户', () => {
+    render(<ContactPickerSheet visible contacts={contacts} onSelect={vi.fn()} onClose={vi.fn()} />);
+    expect(screen.queryByText('我自己')).not.toBeInTheDocument();
   });
 
   it('重新打开时清空搜索内容', () => {

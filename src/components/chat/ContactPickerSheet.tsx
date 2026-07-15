@@ -20,7 +20,7 @@ export function ContactPickerSheet({ visible, contacts, onSelect, onClose }: Con
   }, [visible]);
 
   const filtered = useMemo(
-    () => contacts.filter((c) => c.name.toLowerCase().includes(query.toLowerCase())),
+    () => contacts.filter((c) => c.id !== 'me' && c.name.toLowerCase().includes(query.toLowerCase())),
     [contacts, query]
   );
 
