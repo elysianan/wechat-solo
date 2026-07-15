@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { X } from 'lucide-react';
 import type { TransferPayload } from '../../types';
 
@@ -11,6 +11,13 @@ interface TransferPanelProps {
 export function TransferPanel({ visible, onConfirm, onClose }: TransferPanelProps) {
   const [amount, setAmount] = useState('');
   const [note, setNote] = useState('');
+
+  useEffect(() => {
+    if (visible) {
+      setAmount('');
+      setNote('');
+    }
+  }, [visible]);
 
   if (!visible) return null;
 
@@ -26,11 +33,12 @@ export function TransferPanel({ visible, onConfirm, onClose }: TransferPanelProp
     <div
       className="fixed inset-0 z-50 flex flex-col justify-end bg-black/40"
       data-testid="transfer-panel"
+      onClick={onClose}
     >
-      <div className="bg-wechat-bg rounded-t-2xl p-4">
+      <div className="bg-wechat-bg rounded-t-2xl p-4" onClick={(e) => e.stopPropagation()}>
         <div className="flex items-center justify-between mb-4">
           <span className="text-base font-medium">转账</span>
-          <button onClick={onClose} data-testid="transfer-panel-close">
+          <button type="button" onClick={onClose} data-testid="transfer-panel-close">
             <X size={20} />
           </button>
         </div>

@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { X } from 'lucide-react';
 import { assetUrl } from '../../utils/asset';
 import type { Contact } from '../../types';
@@ -12,6 +12,13 @@ interface ContactPickerSheetProps {
 
 export function ContactPickerSheet({ visible, contacts, onSelect, onClose }: ContactPickerSheetProps) {
   const [query, setQuery] = useState('');
+
+  useEffect(() => {
+    if (visible) {
+      setQuery('');
+    }
+  }, [visible]);
+
   const filtered = useMemo(
     () => contacts.filter((c) => c.name.toLowerCase().includes(query.toLowerCase())),
     [contacts, query]
@@ -23,11 +30,12 @@ export function ContactPickerSheet({ visible, contacts, onSelect, onClose }: Con
     <div
       className="fixed inset-0 z-50 flex flex-col justify-end bg-black/40"
       data-testid="contact-picker-sheet"
+      onClick={onClose}
     >
-      <div className="bg-wechat-bg rounded-t-2xl max-h-[70%] flex flex-col">
+      <div className="bg-wechat-bg rounded-t-2xl max-h-[70%] flex flex-col" onClick={(e) => e.stopPropagation()}>
         <div className="flex items-center justify-between px-4 py-3 border-b border-wechat-divider">
           <span className="text-base font-medium">选择联系人</span>
-          <button onClick={onClose} data-testid="contact-picker-close">
+          <button type="button" onClick={onClose} data-testid="contact-picker-close">
             <X size={20} />
           </button>
         </div>

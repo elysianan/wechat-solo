@@ -4,7 +4,7 @@ import { MentionPicker, type MentionMember } from './MentionPicker';
 import { ContactPickerSheet } from './ContactPickerSheet';
 import { TransferPanel } from './TransferPanel';
 import { useContactStore } from '../../stores/useContactStore';
-import type { MessagePayload, Contact } from '../../types';
+import type { MessagePayload, TransferPayload, Contact } from '../../types';
 
 interface MessageInputProps {
   onSend: (payload: MessagePayload) => void;
@@ -33,7 +33,7 @@ function VoiceRecorderOverlay({ seconds }: { seconds: number }) {
   );
 }
 
-// 底部消息输入框：支持文字、图片、语音、红包、@成员
+// 底部消息输入框：支持文字、图片、语音、红包、位置、名片、转账、@成员
 export function MessageInput({ onSend, members }: MessageInputProps) {
   const [text, setText] = useState('');
   const [showMention, setShowMention] = useState(false);
@@ -136,7 +136,7 @@ export function MessageInput({ onSend, members }: MessageInputProps) {
     setShowTools(false);
   };
 
-  const handleSendTransfer = (payload: MessagePayload) => {
+  const handleSendTransfer = (payload: TransferPayload) => {
     onSend(payload);
     setShowTransferPanel(false);
     setShowTools(false);
