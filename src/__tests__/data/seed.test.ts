@@ -55,4 +55,40 @@ describe('seed data', () => {
       }
     }
   });
+
+  it('includes Sprint10 location message for buddy', () => {
+    const locationMsg = seedMessages.find(
+      (m) => m.conversationId === 'conv-buddy' && m.type === 'location'
+    );
+    expect(locationMsg).toBeDefined();
+    expect(locationMsg).toMatchObject({
+      name: '老地方网咖',
+      address: '上海市徐汇区漕溪北路99号',
+      senderId: 'buddy',
+    });
+  });
+
+  it('includes Sprint10 contact card message for lisa', () => {
+    const cardMsg = seedMessages.find(
+      (m) => m.conversationId === 'conv-lisa' && m.type === 'contact_card'
+    );
+    expect(cardMsg).toBeDefined();
+    expect(cardMsg).toMatchObject({
+      contactId: 'boss',
+      nickname: '张总',
+    });
+  });
+
+  it('includes Sprint10 transfer message for landlord', () => {
+    const transferMsg = seedMessages.find(
+      (m) => m.conversationId === 'conv-landlord' && m.type === 'transfer'
+    );
+    expect(transferMsg).toBeDefined();
+    expect(transferMsg).toMatchObject({
+      amount: 2500,
+      note: '房租',
+      transferStatus: 'pending',
+      senderId: 'me',
+    });
+  });
 });

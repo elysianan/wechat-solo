@@ -42,9 +42,10 @@ describe('ChatPage', () => {
     await waitFor(() => {
       expect(screen.getAllByTestId('chat-list-item').length).toBeGreaterThan(0);
     });
-    // 种子数据：mom 最后一条是图片，buddy 是语音，lisa 是红包
+    // 种子数据：mom 最后一条是图片，buddy 是位置，lisa 是名片，landlord 是转账
     expect(screen.getByText('[图片]')).toBeInTheDocument();
-    expect(screen.getByText('[语音]')).toBeInTheDocument();
-    expect(screen.getByText('[微信红包]')).toBeInTheDocument();
+    expect(screen.getByText('[位置]')).toBeInTheDocument();
+    expect(screen.getByText('[名片]')).toBeInTheDocument();
+    expect(screen.getByText('[转账]')).toBeInTheDocument();
   });
 });

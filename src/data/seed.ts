@@ -133,6 +133,51 @@ export const seedMessages: Message[] = seedContacts.flatMap((contact) => {
     });
   }
 
+  // Sprint10：为 Demo 增加位置 / 名片 / 转账样例消息
+  if (contact.id === 'buddy') {
+    baseMessages.push({
+      id: makeId('msg'),
+      conversationId,
+      senderId: contact.id,
+      type: 'location',
+      name: '老地方网咖',
+      address: '上海市徐汇区漕溪北路99号',
+      status: 'read',
+      createdAt: now - 1000 * 60 * 18,
+    });
+  }
+
+  if (contact.id === 'lisa') {
+    const sharedContact = seedContacts.find((c) => c.id === 'boss');
+    baseMessages.push({
+      id: makeId('msg'),
+      conversationId,
+      senderId: contact.id,
+      type: 'contact_card',
+      contactId: sharedContact!.id,
+      nickname: sharedContact!.name,
+      avatar: sharedContact!.avatar,
+      region: sharedContact!.region,
+      signature: sharedContact!.signature,
+      status: 'read',
+      createdAt: now - 1000 * 60 * 16,
+    });
+  }
+
+  if (contact.id === 'landlord') {
+    baseMessages.push({
+      id: makeId('msg'),
+      conversationId,
+      senderId: 'me',
+      type: 'transfer',
+      amount: 2500,
+      note: '房租',
+      transferStatus: 'pending',
+      createdAt: now - 1000 * 60 * 14,
+      status: 'read',
+    });
+  }
+
   return baseMessages;
 });
 

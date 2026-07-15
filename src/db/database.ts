@@ -43,6 +43,27 @@ export class WeChatSoloDB extends Dexie {
         }
       });
     });
+    // v4：Sprint10 新消息类型字段迁移
+    this.version(4).stores({
+      me: 'id',
+      contacts: 'id',
+      conversations: 'id, updatedAt',
+      messages: 'id, conversationId, createdAt',
+      moments: 'id, createdAt',
+      settings: 'id',
+      tags: 'id, name',
+    }).upgrade((tx) => {
+      return tx.table('messages').toCollection().modify((msg: Record<string, unknown>) => {
+        // Sprint7 旧 transfer/location 结构迁移到 Sprint10 结构
+        if (msg.type === 'transfer') {
+          if (!msg.transferStatus) msg.transferStatus = 'pending';
+          if (!msg.transferCreatedAt) msg.transferCreatedAt = msg.createdAt ?? Date.now();
+        }
+        if (msg.type === 'location') {
+          if (!msg.name) msg.name = msg.address || '未知位置';
+        }
+      });
+    });
   }
 }
 
