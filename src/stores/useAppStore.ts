@@ -6,7 +6,7 @@ export type PageRoute =
   | { type: 'tabs' }
   | { type: 'chat-detail'; conversationId: string }
   | { type: 'contact-detail'; contactId: string }
-  | { type: 'transfer-detail'; transferId: string }
+  | { type: 'transfer-detail'; messageId: string }
   | { type: 'moments' }
   | { type: 'profile-edit' }
   | { type: 'pay' }
@@ -25,7 +25,7 @@ interface AppState {
   popPage: () => void;
   navigateToChatDetail: (conversationId: string) => void;
   navigateToContactDetail: (contactId: string) => void;
-  navigateToTransferDetail: (transferId: string) => void;
+  navigateToTransferDetail: (messageId: string) => void;
   navigateToMoments: () => void;
   navigateToProfileEdit: () => void;
   navigateToPay: () => void;
@@ -65,9 +65,9 @@ export const useAppStore = create<AppState>((set) => ({
       pageStack: [...state.pageStack, { type: 'contact-detail', contactId }],
     })),
 
-  navigateToTransferDetail: (transferId) =>
+  navigateToTransferDetail: (messageId) =>
     set((state) => ({
-      pageStack: [...state.pageStack, { type: 'transfer-detail', transferId }],
+      pageStack: [...state.pageStack, { type: 'transfer-detail', messageId }],
     })),
 
   navigateToMoments: () =>

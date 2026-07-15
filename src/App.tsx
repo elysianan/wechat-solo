@@ -15,6 +15,7 @@ import { GroupListPage } from './pages/GroupListPage';
 import { GroupInfoPage } from './pages/GroupInfoPage';
 import { TagListPage } from './pages/TagListPage';
 import { TagDetailPage } from './pages/TagDetailPage';
+import { TransferDetailPage } from './pages/TransferDetailPage';
 import { MePage } from './pages/MePage';
 import { useAppStore } from './stores/useAppStore';
 import { useContactStore } from './stores/useContactStore';
@@ -83,6 +84,7 @@ function App() {
           {topRoute.type === 'group-info' && <GroupInfoPage />}
           {topRoute.type === 'tag-list' && <TagListPage />}
           {topRoute.type === 'tag-detail' && <TagDetailPage />}
+          {topRoute.type === 'transfer-detail' && <TransferDetailPage />}
         </div>
 
         {/* 底部水印 */}

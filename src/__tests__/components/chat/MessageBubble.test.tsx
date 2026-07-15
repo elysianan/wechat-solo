@@ -226,6 +226,6 @@ describe('MessageBubble', () => {
     render(<MessageBubble message={message} isMe contactName="Lisa" contactAvatar="/avatar.svg" />);
     fireEvent.click(screen.getByTestId('transfer-message-card'));
     const stack = useAppStore.getState().pageStack;
-    expect(stack[stack.length - 1]).toEqual({ type: 'transfer-detail', transferId: 'transfer-1' });
+    expect(stack[stack.length - 1]).toEqual({ type: 'transfer-detail', messageId: 'transfer-1' });
   });
 });

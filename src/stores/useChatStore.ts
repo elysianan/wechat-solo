@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import type { Contact, Conversation, Message, MessagePayload } from '../types';
+import type { Contact, Conversation, Message, MessagePayload, TransferMessage } from '../types';
 import { db } from '../db/database';
 import { generateReply } from '../agents/engine';
 import type { ReplyPlan } from '../agents/types';
@@ -142,6 +142,10 @@ interface ChatState {
   sendMessage: (conversationId: string, payload: MessagePayload) => Promise<void>;
   markConversationRead: (conversationId: string) => Promise<void>;
   updateMessageStatus: (messageId: string, status: Message['status']) => Promise<void>;
+  updateTransferStatus: (
+    messageId: string,
+    status: TransferMessage['transferStatus']
+  ) => Promise<void>;
   deleteMessage: (conversationId: string, messageId: string) => Promise<void>;
   retryMessage: (conversationId: string, messageId: string) => Promise<void>;
   setReplyTimeScale: (scale: number) => void;
@@ -473,6 +477,24 @@ export const useChatStore = create<ChatState>((set) => ({
         next[convId] = state.messages[convId].map((m) =>
           m.id === messageId ? { ...m, status } : m
         );
+      }
+      return { messages: next };
+    });
+  },
+
+  updateTransferStatus: async (messageId, status) => {
+    const now = Date.now();
+    await db.messages.update(messageId, {
+      transferStatus: status,
+      transferCompletedAt: now,
+    } as Partial<Message>);
+    set((state) => {
+      const next: Record<string, Message[]> = {};
+      for (const convId of Object.keys(state.messages)) {
+        next[convId] = state.messages[convId].map((m) => {
+          if (m.id !== messageId || m.type !== 'transfer') return m;
+          return { ...m, transferStatus: status, transferCompletedAt: now };
+        });
       }
       return { messages: next };
     });
