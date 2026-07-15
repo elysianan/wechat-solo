@@ -1,7 +1,8 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { MessageBubble } from '../../../components/chat/MessageBubble';
-import type { Message } from '../../../types';
+import { useAppStore } from '../../../stores/useAppStore';
+import type { Message, TransferMessage, LocationMessage, ContactCardMessage } from '../../../types';
 
 function makeTextMessage(status: Message['status'], content = 'hello'): Message {
   return {
@@ -16,6 +17,10 @@ function makeTextMessage(status: Message['status'], content = 'hello'): Message 
 }
 
 describe('MessageBubble', () => {
+  beforeEach(() => {
+    useAppStore.setState({ currentTab: 'chats', pageStack: [{ type: 'tabs' }] });
+  });
+
   it('渲染自己发送的消息', () => {
     render(<MessageBubble message={makeTextMessage('sent')} isMe contactName="王阿姨" contactAvatar="/avatar.svg" />);
     expect(screen.getByTestId('message-content')).toHaveTextContent('hello');
@@ -154,5 +159,73 @@ describe('MessageBubble', () => {
     expect(retryButton).toBeInTheDocument();
     fireEvent.click(retryButton);
     expect(onRetry).toHaveBeenCalledWith('msg-1');
+  });
+
+  it('渲染转账消息卡片', () => {
+    const message: TransferMessage = {
+      id: 'm1',
+      conversationId: 'c1',
+      senderId: 'me',
+      type: 'transfer',
+      amount: 66,
+      transferStatus: 'pending',
+      status: 'sent',
+      createdAt: Date.now(),
+    };
+    render(<MessageBubble message={message} isMe contactName="Lisa" contactAvatar="/avatar.svg" />);
+    expect(screen.getByText('¥66.00')).toBeInTheDocument();
+  });
+
+  it('渲染位置消息卡片', () => {
+    const message: LocationMessage = {
+      id: 'm1',
+      conversationId: 'c1',
+      senderId: 'me',
+      type: 'location',
+      name: '腾讯大厦',
+      address: '深圳市南山区',
+      status: 'sent',
+      createdAt: Date.now(),
+    };
+    render(<MessageBubble message={message} isMe contactName="Lisa" contactAvatar="/avatar.svg" />);
+    expect(screen.getByText('腾讯大厦')).toBeInTheDocument();
+  });
+
+  it('渲染名片消息卡片并可点击跳转', () => {
+    const message: ContactCardMessage = {
+      id: 'm1',
+      conversationId: 'c1',
+      senderId: 'me',
+      type: 'contact_card',
+      contactId: 'u1',
+      nickname: '王小明',
+      avatar: '/avatar.svg',
+      region: '中国 深圳',
+      status: 'sent',
+      createdAt: Date.now(),
+    };
+    render(<MessageBubble message={message} isMe contactName="Lisa" contactAvatar="/avatar.svg" />);
+    expect(screen.getByText('王小明')).toBeInTheDocument();
+
+    fireEvent.click(screen.getByTestId('contact-card-message'));
+    const stack = useAppStore.getState().pageStack;
+    expect(stack[stack.length - 1]).toEqual({ type: 'contact-detail', contactId: 'u1' });
+  });
+
+  it('点击转账消息卡片跳转到转账详情', () => {
+    const message: TransferMessage = {
+      id: 'transfer-1',
+      conversationId: 'c1',
+      senderId: 'me',
+      type: 'transfer',
+      amount: 88,
+      transferStatus: 'pending',
+      status: 'sent',
+      createdAt: Date.now(),
+    };
+    render(<MessageBubble message={message} isMe contactName="Lisa" contactAvatar="/avatar.svg" />);
+    fireEvent.click(screen.getByTestId('transfer-message-card'));
+    const stack = useAppStore.getState().pageStack;
+    expect(stack[stack.length - 1]).toEqual({ type: 'transfer-detail', transferId: 'transfer-1' });
   });
 });

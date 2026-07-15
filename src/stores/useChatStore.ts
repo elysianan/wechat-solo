@@ -85,6 +85,34 @@ function buildMessageFromPayload(
         title: payload.title ?? '恭喜发财，大吉大利',
         packetStatus: 'pending' as const,
       };
+    case 'transfer':
+      return {
+        ...base,
+        type: 'transfer' as const,
+        amount: payload.amount,
+        note: payload.note,
+        transferStatus: 'pending' as const,
+        transferCreatedAt: now,
+      };
+    case 'location':
+      return {
+        ...base,
+        type: 'location' as const,
+        name: payload.name,
+        address: payload.address,
+        lat: payload.lat,
+        lng: payload.lng,
+      };
+    case 'contact_card':
+      return {
+        ...base,
+        type: 'contact_card' as const,
+        contactId: payload.contactId,
+        nickname: payload.nickname,
+        avatar: payload.avatar,
+        region: payload.region,
+        signature: payload.signature,
+      };
   }
 }
 

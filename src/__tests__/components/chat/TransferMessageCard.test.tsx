@@ -10,6 +10,7 @@ const baseMessage: TransferMessage = {
   type: 'transfer',
   amount: 88,
   transferStatus: 'pending',
+  status: 'sent',
   createdAt: Date.now(),
 };
 

@@ -1,9 +1,13 @@
 import { useEffect, useRef, useState } from 'react';
-import { Check, CheckCheck, Gift, Image as ImageIcon, X } from 'lucide-react';
+import { Check, CheckCheck, Gift, X } from 'lucide-react';
 import type { Message, MessageStatus, RedPacketMessage } from '../../types';
 import { assetUrl } from '../../utils/asset';
+import { useAppStore } from '../../stores/useAppStore';
 import { ImageLightbox } from '../common/ImageLightbox';
 import { MessageContextMenu } from './MessageContextMenu';
+import { LocationMessageCard } from './LocationMessageCard';
+import { ContactCardMessage } from './ContactCardMessage';
+import { TransferMessageCard } from './TransferMessageCard';
 
 interface MessageBubbleProps {
   message: Message;
@@ -124,7 +128,9 @@ function renderContent(
     isPlaying: boolean;
     playedSeconds: number;
     onClick: () => void;
-  }
+  },
+  onContactCardClick?: () => void,
+  onTransferClick?: () => void
 ) {
   switch (message.type) {
     case 'text':
@@ -145,18 +151,14 @@ function renderContent(
       return <RedPacketBubble message={message} />;
     case 'transfer':
       return (
-        <span className="flex items-center gap-1">
-          <ImageIcon size={16} />
-          [转账] ¥{message.amount.toFixed(2)}
-        </span>
+        <div onClick={onTransferClick} className="cursor-pointer" data-testid="transfer-message-card-wrapper">
+          <TransferMessageCard message={message} isMe={isMe} />
+        </div>
       );
     case 'location':
-      return (
-        <span className="flex items-center gap-1">
-          <ImageIcon size={16} />
-          [位置] {message.address}
-        </span>
-      );
+      return <LocationMessageCard message={message} />;
+    case 'contact_card':
+      return <ContactCardMessage message={message} onClick={onContactCardClick} />;
     default:
       return null;
   }
@@ -185,6 +187,9 @@ export function MessageBubble({
   onDelete,
   onRetry,
 }: MessageBubbleProps) {
+  const navigateToContactDetail = useAppStore((state) => state.navigateToContactDetail);
+  const navigateToTransferDetail = useAppStore((state) => state.navigateToTransferDetail);
+
   const [menuVisible, setMenuVisible] = useState(false);
   const [menuPos, setMenuPos] = useState({ x: 0, y: 0 });
   const [lightboxVisible, setLightboxVisible] = useState(false);
@@ -239,6 +244,18 @@ export function MessageBubble({
     } else {
       setPlayedSeconds(0);
       setIsPlaying(true);
+    }
+  };
+
+  const handleContactCardClick = () => {
+    if (message.type === 'contact_card') {
+      navigateToContactDetail(message.contactId);
+    }
+  };
+
+  const handleTransferClick = () => {
+    if (message.type === 'transfer') {
+      navigateToTransferDetail(message.id);
     }
   };
 
@@ -358,7 +375,7 @@ export function MessageBubble({
                 isPlaying,
                 playedSeconds,
                 onClick: handleVoiceClick,
-              })}
+              }, handleContactCardClick, handleTransferClick)}
             </div>
           </div>
         </div>
