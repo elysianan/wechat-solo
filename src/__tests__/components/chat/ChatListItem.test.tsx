@@ -45,4 +45,17 @@ describe('ChatListItem', () => {
     fireEvent.click(screen.getByTestId('chat-list-item'));
     expect(onClick).toHaveBeenCalledTimes(1);
   });
+
+  it('名片消息预览显示为[名片]', () => {
+    render(
+      <ChatListItem
+        avatar="/avatar.svg"
+        name="王阿姨"
+        preview="[名片]"
+        time={Date.now()}
+        unreadCount={0}
+      />
+    );
+    expect(screen.getByText('[名片]')).toBeInTheDocument();
+  });
 });

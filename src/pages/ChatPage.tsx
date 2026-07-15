@@ -22,6 +22,8 @@ function getMessagePreview(message: Message | undefined): string {
       return '[转账]';
     case 'location':
       return '[位置]';
+    case 'contact_card':
+      return '[名片]';
     default:
       return '';
   }
