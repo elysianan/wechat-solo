@@ -17,6 +17,10 @@ vi.mock('../../stores/useContactStore', () => ({
   useContactStore: vi.fn(),
 }));
 
+vi.mock('../../utils/time', () => ({
+  formatChatTime: vi.fn((timestamp: number) => `格式化时间-${timestamp}`),
+}));
+
 // 模拟 Zustand 选择器：mock 函数被调用时把选择器应用到状态对象
 function mockAppStore(state: unknown) {
   (useAppStore as unknown as Mock).mockImplementation(
@@ -102,5 +106,129 @@ describe('TransferDetailPage', () => {
     await waitFor(() => {
       expect(updateTransferStatus).toHaveBeenCalledWith('m1', 'received');
     });
+  });
+
+  it('点击退还后调用 updateTransferStatus', async () => {
+    const updateTransferStatus = vi.fn();
+    mockAppStore({
+      pageStack: [{ type: 'transfer-detail', messageId: 'm1' }],
+      popPage: vi.fn(),
+    });
+    mockChatStore({
+      messages: {
+        c1: [{
+          id: 'm1',
+          conversationId: 'c1',
+          senderId: 'u1',
+          type: 'transfer',
+          amount: 88,
+          transferStatus: 'pending',
+          note: '吃饭',
+          createdAt: Date.now(),
+        }],
+      },
+      conversations: [{ id: 'c1', contactId: 'u1' }],
+      updateTransferStatus,
+    });
+    mockContactStore({
+      contacts: [{ id: 'u1', name: '王小明', avatar: '/avatar.svg' }],
+    });
+
+    render(<TransferDetailPage />);
+    fireEvent.click(screen.getByText('退还'));
+    await waitFor(() => {
+      expect(updateTransferStatus).toHaveBeenCalledWith('m1', 'refunded');
+    });
+  });
+
+  it('已收款状态显示已收款和完成时间', () => {
+    mockAppStore({
+      pageStack: [{ type: 'transfer-detail', messageId: 'm1' }],
+      popPage: vi.fn(),
+    });
+    mockChatStore({
+      messages: {
+        c1: [{
+          id: 'm1',
+          conversationId: 'c1',
+          senderId: 'u1',
+          type: 'transfer',
+          amount: 88,
+          transferStatus: 'received',
+          transferCompletedAt: 1234567890000,
+          note: '吃饭',
+          createdAt: Date.now(),
+        }],
+      },
+      conversations: [{ id: 'c1', contactId: 'u1' }],
+      updateTransferStatus: vi.fn(),
+    });
+    mockContactStore({
+      contacts: [{ id: 'u1', name: '王小明', avatar: '/avatar.svg' }],
+    });
+
+    render(<TransferDetailPage />);
+    expect(screen.getByText('已收款 格式化时间-1234567890000')).toBeInTheDocument();
+  });
+
+  it('已退还状态显示已退还和完成时间', () => {
+    mockAppStore({
+      pageStack: [{ type: 'transfer-detail', messageId: 'm1' }],
+      popPage: vi.fn(),
+    });
+    mockChatStore({
+      messages: {
+        c1: [{
+          id: 'm1',
+          conversationId: 'c1',
+          senderId: 'u1',
+          type: 'transfer',
+          amount: 88,
+          transferStatus: 'refunded',
+          transferCompletedAt: 1234567890000,
+          note: '吃饭',
+          createdAt: Date.now(),
+        }],
+      },
+      conversations: [{ id: 'c1', contactId: 'u1' }],
+      updateTransferStatus: vi.fn(),
+    });
+    mockContactStore({
+      contacts: [{ id: 'u1', name: '王小明', avatar: '/avatar.svg' }],
+    });
+
+    render(<TransferDetailPage />);
+    expect(screen.getByText('已退还 格式化时间-1234567890000')).toBeInTheDocument();
+  });
+
+  it('我发送的待收款转账显示待对方收款且没有操作按钮', () => {
+    mockAppStore({
+      pageStack: [{ type: 'transfer-detail', messageId: 'm1' }],
+      popPage: vi.fn(),
+    });
+    mockChatStore({
+      messages: {
+        c1: [{
+          id: 'm1',
+          conversationId: 'c1',
+          senderId: 'me',
+          type: 'transfer',
+          amount: 88,
+          transferStatus: 'pending',
+          note: '吃饭',
+          createdAt: Date.now(),
+        }],
+      },
+      conversations: [{ id: 'c1', contactId: 'u1' }],
+      updateTransferStatus: vi.fn(),
+    });
+    mockContactStore({
+      contacts: [{ id: 'u1', name: '王小明', avatar: '/avatar.svg' }],
+    });
+
+    render(<TransferDetailPage />);
+    expect(screen.getByText('待对方收款')).toBeInTheDocument();
+    expect(screen.queryByText('收款')).not.toBeInTheDocument();
+    expect(screen.queryByText('退还')).not.toBeInTheDocument();
   });
 });

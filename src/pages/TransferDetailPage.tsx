@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { Header } from '../components/common/Header';
 import { useAppStore } from '../stores/useAppStore';
 import { useChatStore } from '../stores/useChatStore';
@@ -17,7 +18,10 @@ export function TransferDetailPage() {
   const conversations = useChatStore((state) => state.conversations);
   const contacts = useContactStore((state) => state.contacts);
 
-  const message = Object.values(messages).flat().find((m) => m.id === messageId);
+  const message = useMemo(
+    () => Object.values(messages).flat().find((m) => m.id === messageId),
+    [messages, messageId]
+  );
   if (!message || message.type !== 'transfer') return null;
 
   const conversation = conversations.find((c) => c.id === message.conversationId);

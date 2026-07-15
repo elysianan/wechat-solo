@@ -484,10 +484,15 @@ export const useChatStore = create<ChatState>((set) => ({
 
   updateTransferStatus: async (messageId, status) => {
     const now = Date.now();
-    await db.messages.update(messageId, {
-      transferStatus: status,
-      transferCompletedAt: now,
-    } as Partial<Message>);
+    try {
+      await db.messages.update(messageId, {
+        transferStatus: status,
+        transferCompletedAt: now,
+      } as Partial<Message>);
+    } catch (error) {
+      console.error('转账状态更新失败:', error);
+      return;
+    }
     set((state) => {
       const next: Record<string, Message[]> = {};
       for (const convId of Object.keys(state.messages)) {
