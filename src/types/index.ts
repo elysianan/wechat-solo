@@ -15,7 +15,8 @@ export type MessageType =
   | 'voice'
   | 'redpacket'
   | 'transfer'
-  | 'location';
+  | 'location'
+  | 'contact_card';
 
 // 消息状态
 export type MessageStatus = 'sending' | 'sent' | 'delivered' | 'read' | 'failed';
@@ -69,14 +70,27 @@ export interface TransferMessage extends BaseMessage {
   amount: number;
   note?: string;
   transferStatus: 'pending' | 'received' | 'refunded';
+  transferCreatedAt?: number;
+  transferCompletedAt?: number;
 }
 
 // 位置消息（占位，Sprint7 仅提供默认渲染）
 export interface LocationMessage extends BaseMessage {
   type: 'location';
+  name: string;
   address: string;
   lat?: number;
   lng?: number;
+}
+
+// 名片消息
+export interface ContactCardMessage extends BaseMessage {
+  type: 'contact_card';
+  contactId: string;
+  nickname: string;
+  avatar: string;
+  region?: string;
+  signature?: string;
 }
 
 export type Message =
@@ -85,7 +99,8 @@ export type Message =
   | VoiceMessage
   | RedPacketMessage
   | TransferMessage
-  | LocationMessage;
+  | LocationMessage
+  | ContactCardMessage;
 
 // 发送消息时传入的负载（不含 id / senderId / status / createdAt 等运行时字段）
 export interface TextPayload {
@@ -112,11 +127,37 @@ export interface RedPacketPayload {
   title?: string;
 }
 
+export interface LocationPayload {
+  type: 'location';
+  name: string;
+  address: string;
+  lat?: number;
+  lng?: number;
+}
+
+export interface ContactCardPayload {
+  type: 'contact_card';
+  contactId: string;
+  nickname: string;
+  avatar: string;
+  region?: string;
+  signature?: string;
+}
+
+export interface TransferPayload {
+  type: 'transfer';
+  amount: number;
+  note?: string;
+}
+
 export type MessagePayload =
   | TextPayload
   | ImagePayload
   | VoicePayload
-  | RedPacketPayload;
+  | RedPacketPayload
+  | LocationPayload
+  | ContactCardPayload
+  | TransferPayload;
 
 // 会话类型
 export type ConversationType = 'single' | 'group';
@@ -207,6 +248,8 @@ export interface ReplyTrigger {
   // 时段限制: 仅在指定时段参与匹配; 缺省表示全时段
   timeWindow?: TimeWindow[];
   default?: boolean;
+  // 仅匹配指定消息类型; 缺省表示不限制
+  messageType?: 'text' | 'location' | 'contact_card' | 'transfer';
 }
 
 // Agent 回复规则
@@ -228,6 +271,10 @@ export interface AgentBehavior {
   emojiChance: number;
   // 群内无 @ 时的主动回复概率（按人设差异化）
   groupReplyChance: number;
+  // 收到转账后收款概率，默认 0.8
+  transferAcceptChance?: number;
+  // 收到转账后退还概率，默认 0.1
+  transferRefundChance?: number;
 }
 
 // Agent 人设
