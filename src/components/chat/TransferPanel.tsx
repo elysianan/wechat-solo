@@ -60,6 +60,7 @@ export function TransferPanel({ visible, onConfirm, onClose }: TransferPanelProp
           data-testid="transfer-note-input"
         />
         <button
+          type="button"
           onClick={handleConfirm}
           disabled={!amount || parseFloat(amount) <= 0}
           className="w-full bg-wechat-green text-white text-sm py-2 rounded disabled:opacity-50 active:scale-[0.98] transition-transform"
