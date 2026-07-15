@@ -1,10 +1,27 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { MessageInput } from '../../../components/chat/MessageInput';
+import { useContactStore } from '../../../stores/useContactStore';
+import type { Contact } from '../../../types';
 
 const textPayload = (content: string) => ({ type: 'text' as const, content });
 
+const mockContact: Contact = {
+  id: 'u1',
+  name: '王小明',
+  avatar: '/avatar.svg',
+  wechatId: 'wxid_1',
+  region: '中国 深圳',
+  signature: 'hello',
+  tags: [],
+  persona: {} as Contact['persona'],
+  isOnline: true,
+};
+
 describe('MessageInput', () => {
+  beforeEach(() => {
+    useContactStore.setState({ contacts: [mockContact] });
+  });
   it('输入空消息时发送按钮禁用', () => {
     render(<MessageInput onSend={vi.fn()} />);
     expect(screen.getByTestId('send-button')).toBeDisabled();
@@ -33,6 +50,9 @@ describe('MessageInput', () => {
     expect(screen.getByTestId('tool-image-button')).toBeInTheDocument();
     expect(screen.getByTestId('tool-voice-button')).toBeInTheDocument();
     expect(screen.getByTestId('tool-redpacket-button')).toBeInTheDocument();
+    expect(screen.getByTestId('tool-location-button')).toBeInTheDocument();
+    expect(screen.getByTestId('tool-contact-card-button')).toBeInTheDocument();
+    expect(screen.getByTestId('tool-transfer-button')).toBeInTheDocument();
 
     fireEvent.click(screen.getByTestId('tool-button'));
     expect(screen.queryByTestId('tool-image-button')).not.toBeInTheDocument();
@@ -81,5 +101,52 @@ describe('MessageInput', () => {
     fireEvent.click(screen.getByTestId('redpacket-send-button'));
 
     expect(onSend).toHaveBeenCalledWith({ type: 'redpacket', amount: 8.88, title: '大吉大利' });
+  });
+
+  it('点击位置按钮发送 location payload', () => {
+    const onSend = vi.fn();
+    render(<MessageInput onSend={onSend} />);
+    fireEvent.click(screen.getByTestId('tool-button'));
+    fireEvent.click(screen.getByTestId('tool-location-button'));
+
+    expect(onSend).toHaveBeenCalledWith({
+      type: 'location',
+      name: '腾讯大厦',
+      address: '深圳市南山区海天二路33号',
+      lat: 22.5408,
+      lng: 113.9345,
+    });
+  });
+
+  it('点击名片按钮选择联系人后发送 contact_card payload', () => {
+    const onSend = vi.fn();
+    render(<MessageInput onSend={onSend} />);
+    fireEvent.click(screen.getByTestId('tool-button'));
+    fireEvent.click(screen.getByTestId('tool-contact-card-button'));
+
+    expect(screen.getByTestId('contact-picker-sheet')).toBeInTheDocument();
+    fireEvent.click(screen.getByText('王小明'));
+
+    expect(onSend).toHaveBeenCalledWith({
+      type: 'contact_card',
+      contactId: 'u1',
+      nickname: '王小明',
+      avatar: '/avatar.svg',
+      region: '中国 深圳',
+      signature: 'hello',
+    });
+  });
+
+  it('点击转账按钮输入金额备注后发送 transfer payload', () => {
+    const onSend = vi.fn();
+    render(<MessageInput onSend={onSend} />);
+    fireEvent.click(screen.getByTestId('tool-button'));
+    fireEvent.click(screen.getByTestId('tool-transfer-button'));
+
+    fireEvent.change(screen.getByTestId('transfer-amount-input'), { target: { value: '88' } });
+    fireEvent.change(screen.getByTestId('transfer-note-input'), { target: { value: '吃饭' } });
+    fireEvent.click(screen.getByTestId('transfer-confirm-button'));
+
+    expect(onSend).toHaveBeenCalledWith({ type: 'transfer', amount: 88, note: '吃饭' });
   });
 });

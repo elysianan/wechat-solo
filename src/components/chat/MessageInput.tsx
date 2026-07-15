@@ -1,7 +1,10 @@
 import { useRef, useState } from 'react';
-import { Plus, AtSign, Image as ImageIcon, Mic, Gift, X } from 'lucide-react';
+import { Plus, AtSign, Image as ImageIcon, Mic, Gift, MapPin, UserCircle, Banknote, X } from 'lucide-react';
 import { MentionPicker, type MentionMember } from './MentionPicker';
-import type { MessagePayload } from '../../types';
+import { ContactPickerSheet } from './ContactPickerSheet';
+import { TransferPanel } from './TransferPanel';
+import { useContactStore } from '../../stores/useContactStore';
+import type { MessagePayload, Contact } from '../../types';
 
 interface MessageInputProps {
   onSend: (payload: MessagePayload) => void;
@@ -38,6 +41,9 @@ export function MessageInput({ onSend, members }: MessageInputProps) {
   const [showRedPacket, setShowRedPacket] = useState(false);
   const [redPacketAmount, setRedPacketAmount] = useState('');
   const [redPacketTitle, setRedPacketTitle] = useState('恭喜发财，大吉大利');
+  const [showContactPicker, setShowContactPicker] = useState(false);
+  const [showTransferPanel, setShowTransferPanel] = useState(false);
+  const contacts = useContactStore((state) => state.contacts);
 
   const [isRecording, setIsRecording] = useState(false);
   const [recordingSeconds, setRecordingSeconds] = useState(0);
@@ -106,6 +112,36 @@ export function MessageInput({ onSend, members }: MessageInputProps) {
     setShowTools(false);
   };
 
+  const handleSendLocation = () => {
+    onSend({
+      type: 'location',
+      name: '腾讯大厦',
+      address: '深圳市南山区海天二路33号',
+      lat: 22.5408,
+      lng: 113.9345,
+    });
+    setShowTools(false);
+  };
+
+  const handleSelectContact = (contact: Contact) => {
+    onSend({
+      type: 'contact_card',
+      contactId: contact.id,
+      nickname: contact.name,
+      avatar: contact.avatar,
+      region: contact.region,
+      signature: contact.signature,
+    });
+    setShowContactPicker(false);
+    setShowTools(false);
+  };
+
+  const handleSendTransfer = (payload: MessagePayload) => {
+    onSend(payload);
+    setShowTransferPanel(false);
+    setShowTools(false);
+  };
+
   return (
     <div
       className="fixed bottom-0 left-0 right-0 bg-wechat-bg border-t border-wechat-divider px-3 py-2 max-w-phone mx-auto z-20"
@@ -118,6 +154,19 @@ export function MessageInput({ onSend, members }: MessageInputProps) {
         members={members ?? []}
         onSelect={handleMentionSelect}
         onClose={() => setShowMention(false)}
+      />
+
+      <ContactPickerSheet
+        visible={showContactPicker}
+        contacts={contacts}
+        onSelect={handleSelectContact}
+        onClose={() => setShowContactPicker(false)}
+      />
+
+      <TransferPanel
+        visible={showTransferPanel}
+        onConfirm={handleSendTransfer}
+        onClose={() => setShowTransferPanel(false)}
       />
 
       {showRedPacket && (
@@ -203,6 +252,39 @@ export function MessageInput({ onSend, members }: MessageInputProps) {
               <Gift size={24} />
             </div>
             <span className="text-xs">红包</span>
+          </button>
+          <button
+            type="button"
+            onClick={handleSendLocation}
+            className="flex flex-col items-center gap-1 text-wechat-text-secondary active:scale-95 transition-transform"
+            data-testid="tool-location-button"
+          >
+            <div className="w-12 h-12 rounded-xl bg-wechat-card flex items-center justify-center">
+              <MapPin size={24} />
+            </div>
+            <span className="text-xs">位置</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setShowContactPicker(true)}
+            className="flex flex-col items-center gap-1 text-wechat-text-secondary active:scale-95 transition-transform"
+            data-testid="tool-contact-card-button"
+          >
+            <div className="w-12 h-12 rounded-xl bg-wechat-card flex items-center justify-center">
+              <UserCircle size={24} />
+            </div>
+            <span className="text-xs">名片</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setShowTransferPanel(true)}
+            className="flex flex-col items-center gap-1 text-wechat-text-secondary active:scale-95 transition-transform"
+            data-testid="tool-transfer-button"
+          >
+            <div className="w-12 h-12 rounded-xl bg-wechat-card flex items-center justify-center">
+              <Banknote size={24} />
+            </div>
+            <span className="text-xs">转账</span>
           </button>
         </div>
       )}
