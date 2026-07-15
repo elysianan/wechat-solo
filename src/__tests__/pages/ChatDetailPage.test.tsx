@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, vi, type Mock } from 'vitest';
+import { describe, it, expect, beforeEach, beforeAll, vi, type Mock } from 'vitest';
 import { render, screen, waitFor, fireEvent } from '@testing-library/react';
 import { ChatDetailPage } from '../../pages/ChatDetailPage';
 import { db } from '../../db/database';
@@ -8,16 +8,31 @@ import { useContactStore } from '../../stores/useContactStore';
 import { useAppStore } from '../../stores/useAppStore';
 
 describe('ChatDetailPage', () => {
+  beforeAll(() => {
+    // 屏蔽前一个测试文件遗留异步操作在 db.delete() 后触发的 DatabaseClosedError
+    window.addEventListener('unhandledrejection', (event) => {
+      if (event.reason?.name === 'DatabaseClosedError') {
+        event.preventDefault();
+      }
+    });
+  });
+
   beforeEach(async () => {
     HTMLElement.prototype.scrollIntoView = vi.fn();
+    // 终止上一个测试可能遗留的 Agent 调度器，避免在 db.delete()/open() 后仍访问旧库
+    useChatStore.getState().stopInitiateScheduler();
+    // 把回复时间缩放为 0，使当前文件内 Agent 回复立即完成，不遗留跨测试的长定时器
+    useChatStore.setState({ replyTimeScale: 0 });
     await db.delete();
     await db.open();
-    useChatStore.setState({ conversations: [], messages: {}, loaded: false });
+    useChatStore.setState({ conversations: [], messages: {}, loaded: false, typingConversations: {} });
     useContactStore.setState({ me: null, contacts: [], loaded: false });
     useAppStore.setState({ currentTab: 'chats', pageStack: [{ type: 'tabs' }] });
     await initializeDatabase();
     await useContactStore.getState().loadContacts();
     await useChatStore.getState().loadChats();
+    // 让上一个测试遗留的立即定时器有机会 flush
+    await new Promise((resolve) => setTimeout(resolve, 0));
   });
 
   it('渲染当前会话的消息气泡', async () => {
@@ -65,8 +80,8 @@ describe('ChatDetailPage', () => {
       expect(screen.getAllByTestId('message-bubble').length).toBeGreaterThan(0);
     });
     const scrollMock = HTMLElement.prototype.scrollIntoView as Mock;
-    // 首次滚动延迟到外层 300ms 转场结束后
-    await new Promise((resolve) => setTimeout(resolve, 350));
+    // 首次滚动延迟到外层 300ms 转场结束后，再留余量等待异步消息稳定
+    await new Promise((resolve) => setTimeout(resolve, 500));
     expect(scrollMock).toHaveBeenCalledWith({ behavior: 'auto' });
   });
 
