@@ -25,6 +25,8 @@ export const bossPersona: PersonaDraft = {
     multiMessageChance: 0,
     emojiChance: 0,
     groupReplyChance: 0.15,
+    transferAcceptChance: 0.9,
+    transferRefundChance: 0.05,
   },
   rules: [
     {
@@ -180,6 +182,36 @@ export const bossPersona: PersonaDraft = {
         '处理完第一时间同步我。',
       ],
       weight: 1.5,
+    },
+    {
+      id: 'boss-location',
+      triggers: { messageType: 'location' },
+      responses: [
+        '这是客户那边？{keyword}',
+        '定位收到，按{keyword}地址过去。',
+        '把{keyword}地址同步给行政，安排车辆。',
+      ],
+      weight: 1,
+    },
+    {
+      id: 'boss-transfer',
+      triggers: { messageType: 'transfer' },
+      responses: [
+        '转账收到。',
+        '这是报销还是项目款？',
+        '金额{keyword}对上了，我通知财务。',
+      ],
+      weight: 1,
+    },
+    {
+      id: 'boss-contact-card',
+      triggers: { messageType: 'contact_card' },
+      responses: [
+        '名片我转给商务。',
+        '这个人{keyword}是合作方？',
+        '让对方{keyword}发一份资料过来。',
+      ],
+      weight: 0.8,
     },
     {
       id: 'boss-default',

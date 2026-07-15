@@ -25,6 +25,8 @@ export const landlordPersona: PersonaDraft = {
     multiMessageChance: 0,
     emojiChance: 0.1,
     groupReplyChance: 0.3,
+    transferAcceptChance: 0.98,
+    transferRefundChance: 0,
   },
   rules: [
     {
@@ -178,6 +180,36 @@ export const landlordPersona: PersonaDraft = {
         '滞纳金你自己承担，规矩就是规矩。',
       ],
       weight: 1.5,
+    },
+    {
+      id: 'landlord-location',
+      triggers: { messageType: 'location' },
+      responses: [
+        '这是房子位置？{keyword}我晓得。',
+        '定位{keyword}收到，我过来看看。',
+        '你在附近？{keyword}有事直接上门说。',
+      ],
+      weight: 1,
+    },
+    {
+      id: 'landlord-transfer',
+      triggers: { messageType: 'transfer' },
+      responses: [
+        '房租{keyword}收到了。',
+        '转账{keyword}收到，下个月按时。',
+        '钱{keyword}对上了，我记账。',
+      ],
+      weight: 1.2,
+    },
+    {
+      id: 'landlord-contact-card',
+      triggers: { messageType: 'contact_card' },
+      responses: [
+        '这是新租客？{keyword}',
+        '名片{keyword}我留着，有事联系。',
+        '靠谱的{keyword}租客可以推荐给我。',
+      ],
+      weight: 0.8,
     },
     {
       id: 'landlord-default',

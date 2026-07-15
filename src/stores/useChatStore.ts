@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import type { Contact, Conversation, Message, MessagePayload, TransferMessage } from '../types';
+import type { Contact, Conversation, Message, MessagePayload } from '../types';
 import { db } from '../db/database';
 import { generateReply } from '../agents/engine';
 import type { ReplyPlan } from '../agents/types';

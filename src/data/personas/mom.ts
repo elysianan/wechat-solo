@@ -27,6 +27,8 @@ export const momPersona: PersonaDraft = {
     multiMessageChance: 0.3,
     emojiChance: 0.6,
     groupReplyChance: 0.7,
+    transferAcceptChance: 0.95,
+    transferRefundChance: 0.02,
   },
   rules: [
     {
@@ -197,6 +199,36 @@ export const momPersona: PersonaDraft = {
         '{keyword}清淡点，别吃辛辣的。',
       ],
       weight: 1.5,
+    },
+    {
+      id: 'mom-location',
+      triggers: { messageType: 'location' },
+      responses: [
+        '这是哪儿？{keyword}远不远？',
+        '好，到时候{keyword}见。',
+        '你把{keyword}位置发我，我让你爸也看看。',
+      ],
+      weight: 1,
+    },
+    {
+      id: 'mom-transfer',
+      triggers: { messageType: 'transfer' },
+      responses: [
+        '怎么突然给我转钱？{keyword}',
+        '谢谢儿子/女儿。{keyword}',
+        '钱{keyword}够不够用？不够跟妈妈说。',
+      ],
+      weight: 1,
+    },
+    {
+      id: 'mom-contact-card',
+      triggers: { messageType: 'contact_card' },
+      responses: [
+        '这是谁的名片呀？{keyword}',
+        '你朋友？{keyword}有空带回家吃饭。',
+        '妈{keyword}存一下，以后没准用得上。',
+      ],
+      weight: 0.8,
     },
     {
       id: 'mom-default',

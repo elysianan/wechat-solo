@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { generateReply } from '../../agents/engine';
-import type { Contact, Message } from '../../types';
+import type { Contact, LocationMessage, Message, TransferMessage } from '../../types';
 
 function createContact(overrides?: Partial<Contact>): Contact {
   return {
@@ -143,5 +143,167 @@ describe('AgentEngine', () => {
       options: { timeScale: 0 },
     });
     expect(plan.replyMessages.length).toBeGreaterThanOrEqual(2);
+  });
+
+  it('收到位置消息按 messageType 规则回复', () => {
+    const contact = createContact({
+      persona: {
+        ...createContact().persona,
+        rules: [
+          {
+            id: 'location-rule',
+            triggers: { messageType: 'location' },
+            responses: ['收到，到时候见'],
+            weight: 1,
+          },
+          { id: 'default', triggers: { default: true }, responses: ['好的'], weight: 1 },
+        ],
+      },
+    });
+    const userMessage: LocationMessage = {
+      id: 'm1',
+      conversationId: 'c1',
+      senderId: 'me',
+      type: 'location',
+      name: '腾讯大厦',
+      address: '深圳',
+      status: 'sent',
+      createdAt: Date.now(),
+    };
+    const plan = generateReply({
+      contact,
+      userMessage,
+      recentMessages: [userMessage],
+      options: { timeScale: 0 },
+    });
+    expect(plan.replyMessages).toEqual([{ content: '收到，到时候见' }]);
+    expect(plan.usedRuleId).toBe('location-rule');
+  });
+
+  it('收到转账消息按 messageType 规则回复', () => {
+    const contact = createContact({
+      persona: {
+        ...createContact().persona,
+        rules: [
+          {
+            id: 'transfer-rule',
+            triggers: { messageType: 'transfer' },
+            responses: ['怎么突然给我转钱？'],
+            weight: 1,
+          },
+          { id: 'default', triggers: { default: true }, responses: ['好的'], weight: 1 },
+        ],
+      },
+    });
+    const userMessage: TransferMessage = {
+      id: 'm2',
+      conversationId: 'c1',
+      senderId: 'me',
+      type: 'transfer',
+      amount: 100,
+      note: '零花钱',
+      transferStatus: 'pending',
+      status: 'sent',
+      createdAt: Date.now(),
+    };
+    const plan = generateReply({
+      contact,
+      userMessage,
+      recentMessages: [userMessage],
+      options: { timeScale: 0 },
+    });
+    expect(plan.replyMessages).toEqual([{ content: '怎么突然给我转钱？' }]);
+    expect(plan.usedRuleId).toBe('transfer-rule');
+  });
+
+  it('非文本消息不会误触发文本关键词规则', () => {
+    const contact = createContact({
+      persona: {
+        ...createContact().persona,
+        rules: [
+          { id: 'food', triggers: { keywords: ['吃'] }, responses: ['吃了吗？'], weight: 1 },
+          { id: 'default', triggers: { default: true }, responses: ['默认回复'], weight: 1 },
+        ],
+      },
+    });
+    const userMessage: LocationMessage = {
+      id: 'm3',
+      conversationId: 'c1',
+      senderId: 'me',
+      type: 'location',
+      name: '吃饭的地方',
+      address: '某街道',
+      status: 'sent',
+      createdAt: Date.now(),
+    };
+    const plan = generateReply({
+      contact,
+      userMessage,
+      recentMessages: [userMessage],
+      options: { timeScale: 0 },
+    });
+    expect(plan.replyMessages[0].content).toBe('默认回复');
+    expect(plan.usedRuleId).not.toBe('food');
+  });
+
+  it('非文本消息无 messageType 规则时走 default 规则', () => {
+    const contact = createContact({
+      persona: {
+        ...createContact().persona,
+        rules: [{ id: 'default', triggers: { default: true }, responses: ['收到'], weight: 1 }],
+      },
+    });
+    const userMessage: LocationMessage = {
+      id: 'm4',
+      conversationId: 'c1',
+      senderId: 'me',
+      type: 'location',
+      name: '某地',
+      address: '某地址',
+      status: 'sent',
+      createdAt: Date.now(),
+    };
+    const plan = generateReply({
+      contact,
+      userMessage,
+      recentMessages: [userMessage],
+      options: { timeScale: 0 },
+    });
+    expect(plan.replyMessages).toEqual([{ content: '收到' }]);
+  });
+
+  it('非文本消息保留已读不回判定', () => {
+    const contact = createContact({
+      persona: {
+        ...createContact().persona,
+        behavior: { ...createContact().persona.behavior, readButNoReplyChance: 1 },
+        rules: [
+          {
+            id: 'location-rule',
+            triggers: { messageType: 'location' },
+            responses: ['收到'],
+            weight: 1,
+          },
+        ],
+      },
+    });
+    const userMessage: LocationMessage = {
+      id: 'm5',
+      conversationId: 'c1',
+      senderId: 'me',
+      type: 'location',
+      name: '某地',
+      address: '某地址',
+      status: 'sent',
+      createdAt: Date.now(),
+    };
+    const plan = generateReply({
+      contact,
+      userMessage,
+      recentMessages: [userMessage],
+      options: { timeScale: 0 },
+    });
+    expect(plan.replyMessages).toHaveLength(0);
+    expect(plan.readUserMessageIds).toContain(userMessage.id);
   });
 });

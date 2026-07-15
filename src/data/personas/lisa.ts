@@ -25,6 +25,8 @@ export const lisaPersona: PersonaDraft = {
     multiMessageChance: 0.1,
     emojiChance: 0.4,
     groupReplyChance: 0.25,
+    transferAcceptChance: 0.9,
+    transferRefundChance: 0.05,
   },
   rules: [
     {
@@ -181,6 +183,36 @@ export const lisaPersona: PersonaDraft = {
         '{keyword}完还可以顺便吃个饭',
       ],
       weight: 1.5,
+    },
+    {
+      id: 'lisa-location',
+      triggers: { messageType: 'location' },
+      responses: [
+        '这是要约我见面的地方吗……{keyword}',
+        '定位{keyword}收到了，我查一下路线。',
+        '好，到时候{keyword}见。',
+      ],
+      weight: 1,
+    },
+    {
+      id: 'lisa-transfer',
+      triggers: { messageType: 'transfer' },
+      responses: [
+        '怎么突然给我转钱……{keyword}',
+        '那{keyword}……我就不客气了？',
+        '谢谢啦，改天{keyword}请你喝咖啡。',
+      ],
+      weight: 1,
+    },
+    {
+      id: 'lisa-contact-card',
+      triggers: { messageType: 'contact_card' },
+      responses: [
+        '这是你的朋友吗……{keyword}',
+        '名片{keyword}我先存了。',
+        '感觉你们{keyword}关系不错？',
+      ],
+      weight: 0.8,
     },
     {
       id: 'lisa-default',

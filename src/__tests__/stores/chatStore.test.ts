@@ -191,7 +191,8 @@ describe('useChatStore agent flow', () => {
     await vi.runAllTimersAsync();
 
     const msgs = useChatStore.getState().messages[conversation.id];
-    expect(msgs[msgs.length - 1].type).toBe('location');
+    const location = msgs.find((m) => m.senderId === 'me' && m.type === 'location');
+    expect(location).toBeDefined();
   });
 
   it('发送名片消息', async () => {
@@ -206,7 +207,8 @@ describe('useChatStore agent flow', () => {
     await vi.runAllTimersAsync();
 
     const msgs = useChatStore.getState().messages[conversation.id];
-    expect(msgs[msgs.length - 1].type).toBe('contact_card');
+    const card = msgs.find((m) => m.senderId === 'me' && m.type === 'contact_card');
+    expect(card).toBeDefined();
   });
 
   it('发送转账消息', async () => {
@@ -226,8 +228,8 @@ describe('useChatStore agent flow', () => {
     await vi.runAllTimersAsync();
 
     const msgs = useChatStore.getState().messages[conversation.id];
-    const transfer = msgs[msgs.length - 1];
-    expect(transfer.type).toBe('transfer');
+    const transfer = msgs.find((m) => m.senderId === 'me' && m.type === 'transfer');
+    expect(transfer).toBeDefined();
     expect((transfer as import('../../types').TransferMessage).transferStatus).toBe('pending');
   });
 
@@ -237,15 +239,19 @@ describe('useChatStore agent flow', () => {
     await useChatStore.getState().sendMessage(conversation.id, { type: 'transfer', amount: 88 });
     await vi.runAllTimersAsync();
 
-    const transfer = useChatStore.getState().messages[conversation.id].slice(-1)[0];
-    expect(transfer.type).toBe('transfer');
+    const transfer = useChatStore
+      .getState()
+      .messages[conversation.id]
+      .find((m) => m.senderId === 'me' && m.type === 'transfer');
+    expect(transfer).toBeDefined();
+    expect(transfer!.type).toBe('transfer');
 
-    await useChatStore.getState().updateTransferStatus(transfer.id, 'received');
+    await useChatStore.getState().updateTransferStatus(transfer!.id, 'received');
 
     const updated = useChatStore
       .getState()
       .messages[conversation.id]
-      .find((m) => m.id === transfer.id);
+      .find((m) => m.id === transfer!.id);
     expect((updated as import('../../types').TransferMessage).transferStatus).toBe('received');
   });
 });

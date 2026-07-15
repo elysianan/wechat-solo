@@ -26,6 +26,8 @@ export const buddyPersona: PersonaDraft = {
     multiMessageChance: 0.4,
     emojiChance: 0.7,
     groupReplyChance: 0.85,
+    transferAcceptChance: 0.85,
+    transferRefundChance: 0.1,
   },
   rules: [
     {
@@ -183,6 +185,36 @@ export const buddyPersona: PersonaDraft = {
         '{keyword}完直接开黑，一条龙安排',
       ],
       weight: 1.5,
+    },
+    {
+      id: 'buddy-location',
+      triggers: { messageType: 'location' },
+      responses: [
+        '这是哪儿？{keyword}定位发我，马上到。',
+        '好{keyword}地方啊，附近有没有吃的？',
+        '等我，五分钟后{keyword}出门。',
+      ],
+      weight: 1,
+    },
+    {
+      id: 'buddy-transfer',
+      triggers: { messageType: 'transfer' },
+      responses: [
+        '卧槽，{keyword}发财了？',
+        '这钱{keyword}我先收了，晚上烧烤我请！',
+        '兄弟之间{keyword}不用这么客气吧。',
+      ],
+      weight: 1,
+    },
+    {
+      id: 'buddy-contact-card',
+      triggers: { messageType: 'contact_card' },
+      responses: [
+        '这人{keyword}谁啊？介绍介绍。',
+        '名片{keyword}收了，有局叫他一起。',
+        '看起来{keyword}能处，推给我。',
+      ],
+      weight: 0.8,
     },
     {
       id: 'buddy-default',

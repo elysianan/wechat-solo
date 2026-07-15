@@ -22,9 +22,20 @@ function pickRandom<T>(arr: T[]): T {
 }
 
 // 判断规则是否命中，返回命中的关键词：
-// null = 未命中；'' = 命中但无具体关键词(纯 context / 正则 / default)；非空 = 命中的关键词
+// null = 未命中；'' = 命中但无具体关键词(纯 context / 正则 / default / messageType)；非空 = 命中的关键词
 // context 是门槛条件: 声明了 context 时, 最近 5 条消息必须含任一 context 关键词
-function matchKeyword(rule: ReplyRule, content: string, recentContents: string[]): string | null {
+// messageType 规则优先级最高: 声明了 messageType 时只按消息类型匹配
+function matchKeyword(
+  rule: ReplyRule,
+  content: string,
+  recentContents: string[],
+  messageType: Message['type']
+): string | null {
+  // messageType 匹配优先
+  if (rule.triggers.messageType) {
+    return rule.triggers.messageType === messageType ? '' : null;
+  }
+
   if (rule.triggers.context && rule.triggers.context.length > 0) {
     const contextText = recentContents.slice(-5).join(' ');
     if (!rule.triggers.context.some((keyword) => contextText.includes(keyword))) {
@@ -80,13 +91,14 @@ function selectWeightedMatch(matches: RuleMatch[]): RuleMatch {
   return matches[matches.length - 1];
 }
 
-// 选择回复规则：时段过滤 → maxUsage 剔除 → 关键词/context 匹配 → 兜底 default
+// 选择回复规则：时段过滤 → maxUsage 剔除 → messageType/context/关键词 匹配 → 兜底 default
 function selectRule(
   rules: ReplyRule[],
   content: string,
   recentContents: string[],
   now: number,
-  sessionRuleUsage?: Map<string, number>
+  sessionRuleUsage?: Map<string, number>,
+  messageType?: Message['type']
 ): RuleMatch | undefined {
   if (rules.length === 0) {
     return undefined;
@@ -107,7 +119,7 @@ function selectRule(
 
   const matched: RuleMatch[] = [];
   for (const rule of pool) {
-    const keyword = matchKeyword(rule, content, recentContents);
+    const keyword = matchKeyword(rule, content, recentContents, messageType ?? 'text');
     if (keyword !== null) {
       matched.push({ rule, keyword });
     }
@@ -141,21 +153,6 @@ export function generateReply(input: GenerateReplyInput): ReplyPlan {
   const timeScale = options?.timeScale ?? 1;
   const forceReply = options?.forceReply ?? false;
   const behavior = contact.persona.behavior;
-
-  // Sprint7：Agent 引擎当前只处理文本消息，非文本消息直接返回空计划
-  if (userMessage.type !== 'text') {
-    return {
-      conversationId: userMessage.conversationId,
-      contactId: contact.id,
-      readUserMessageIds: recentMessages
-        .filter((message) => message.senderId === 'me')
-        .map((message) => message.id),
-      readDelayMs: 0,
-      typingDurationMs: 0,
-      replyDelayMs: 0,
-      replyMessages: [],
-    };
-  }
 
   // 计算时间线
   const baseDelay = randomBetween(behavior.replyDelayMin, behavior.replyDelayMax) * timeScale;
@@ -200,12 +197,15 @@ export function generateReply(input: GenerateReplyInput): ReplyPlan {
       ? STORY_CHAINS.find((c) => c.id === progress.chainId)
       : undefined;
 
+    // 剧情链基于文本内容推进，非文本消息不参与关键词匹配
+    const userText = messageText(userMessage);
+
     if (progress && chain) {
       // 剧情进行中: 推进 / 拉回 / 脱离
       const step = chain.steps[progress.step];
       const canAdvance =
         !step.advanceKeywords ||
-        step.advanceKeywords.some((keyword) => userMessage.content.includes(keyword));
+        step.advanceKeywords.some((keyword) => userText.includes(keyword));
 
       if (canAdvance) {
         const nextStep = progress.step + 1;
@@ -228,7 +228,7 @@ export function generateReply(input: GenerateReplyInput): ReplyPlan {
       const triggered = STORY_CHAINS.find(
         (c) =>
           c.contactId === contact.id &&
-          c.triggerKeywords.some((keyword) => userMessage.content.includes(keyword)) &&
+          c.triggerKeywords.some((keyword) => userText.includes(keyword)) &&
           Math.random() < c.triggerChance
       );
       if (triggered) {
@@ -257,10 +257,11 @@ export function generateReply(input: GenerateReplyInput): ReplyPlan {
   const recentContents = recentMessages.map(messageText);
   const match = selectRule(
     contact.persona.rules,
-    userMessage.content,
+    userMessage.type === 'text' ? userMessage.content : '',
     recentContents,
     now,
-    options?.sessionRuleUsage
+    options?.sessionRuleUsage,
+    userMessage.type
   );
   const replyMessages: Array<{ content: string }> = [];
   let usedRuleId: string | undefined;
