@@ -179,4 +179,73 @@ describe('useChatStore agent flow', () => {
     expect(retried!.id).not.toBe(failedMessage.id);
     expect(retried!.status).toBe('read');
   });
+
+  it('发送位置消息', async () => {
+    await useChatStore.getState().loadChats();
+    const conversation = useChatStore.getState().conversations.find((c) => c.contactId === 'mom')!;
+    await useChatStore.getState().sendMessage(conversation.id, {
+      type: 'location',
+      name: '腾讯大厦',
+      address: '深圳市南山区',
+    });
+    await vi.runAllTimersAsync();
+
+    const msgs = useChatStore.getState().messages[conversation.id];
+    expect(msgs[msgs.length - 1].type).toBe('location');
+  });
+
+  it('发送名片消息', async () => {
+    await useChatStore.getState().loadChats();
+    const conversation = useChatStore.getState().conversations.find((c) => c.contactId === 'mom')!;
+    await useChatStore.getState().sendMessage(conversation.id, {
+      type: 'contact_card',
+      contactId: 'buddy',
+      nickname: '阿杰',
+      avatar: '/avatar-buddy.svg',
+    });
+    await vi.runAllTimersAsync();
+
+    const msgs = useChatStore.getState().messages[conversation.id];
+    expect(msgs[msgs.length - 1].type).toBe('contact_card');
+  });
+
+  it('发送转账消息', async () => {
+    // 避免自动收款/退还把 pending 状态覆盖掉
+    await db.contacts.where('id').equals('mom').modify((contact) => {
+      contact.persona.behavior.transferAcceptChance = 0;
+      contact.persona.behavior.transferRefundChance = 0;
+    });
+
+    await useChatStore.getState().loadChats();
+    const conversation = useChatStore.getState().conversations.find((c) => c.contactId === 'mom')!;
+    await useChatStore.getState().sendMessage(conversation.id, {
+      type: 'transfer',
+      amount: 88,
+      note: '吃饭',
+    });
+    await vi.runAllTimersAsync();
+
+    const msgs = useChatStore.getState().messages[conversation.id];
+    const transfer = msgs[msgs.length - 1];
+    expect(transfer.type).toBe('transfer');
+    expect((transfer as import('../../types').TransferMessage).transferStatus).toBe('pending');
+  });
+
+  it('更新转账状态为已收款', async () => {
+    await useChatStore.getState().loadChats();
+    const conversation = useChatStore.getState().conversations.find((c) => c.contactId === 'mom')!;
+    await useChatStore.getState().sendMessage(conversation.id, { type: 'transfer', amount: 88 });
+    await vi.runAllTimersAsync();
+
+    const transfer = useChatStore.getState().messages[conversation.id].slice(-1)[0];
+    expect(transfer.type).toBe('transfer');
+
+    await useChatStore.getState().updateTransferStatus(transfer.id, 'received');
+
+    const updated = useChatStore
+      .getState()
+      .messages[conversation.id]
+      .find((m) => m.id === transfer.id);
+    expect((updated as import('../../types').TransferMessage).transferStatus).toBe('received');
+  });
 });

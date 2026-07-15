@@ -11,6 +11,11 @@ function escapeRegExp(text: string): string {
   return text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
+// 生成 [min, max] 之间的随机数
+function randomBetween(min: number, max: number): number {
+  return min + Math.random() * (max - min);
+}
+
 // session 级防重复状态: 放模块级而非 Zustand state(避免写入时触发重渲染),
 // 页面刷新自然清零; 引擎选取台词时跳过已用, 并直接写入这两个集合
 const sessionUsedResponses = new Set<string>();
@@ -127,6 +132,25 @@ function messageToPayload(message: Message): MessagePayload | null {
       return { type: 'voice', url: message.url, duration: message.duration };
     case 'redpacket':
       return { type: 'redpacket', amount: message.amount, title: message.title };
+    case 'location':
+      return {
+        type: 'location',
+        name: message.name,
+        address: message.address,
+        lat: message.lat,
+        lng: message.lng,
+      };
+    case 'contact_card':
+      return {
+        type: 'contact_card',
+        contactId: message.contactId,
+        nickname: message.nickname,
+        avatar: message.avatar,
+        region: message.region,
+        signature: message.signature,
+      };
+    case 'transfer':
+      return { type: 'transfer', amount: message.amount, note: message.note };
     default:
       return null;
   }
@@ -228,6 +252,32 @@ async function tryInitiate(): Promise<void> {
       c.id === picked.conversation.id ? { ...c, lastInitiatedAt: now } : c
     ),
   }));
+}
+
+// Agent 自动处理用户转账：延迟后按概率收款或退还（仅单聊、仅我发出的转账）
+function scheduleTransferAgentAction(transferMessage: Message, contact: Contact) {
+  if (transferMessage.type !== 'transfer') return;
+  if (transferMessage.senderId !== 'me') return;
+
+  const behavior = contact.persona.behavior;
+  const acceptChance = behavior.transferAcceptChance ?? 0.8;
+  const refundChance = behavior.transferRefundChance ?? 0.1;
+  const delay = randomBetween(3000, 10000);
+
+  setTimeout(() => {
+    const random = Math.random();
+    if (random < refundChance) {
+      useChatStore.getState().updateTransferStatus(transferMessage.id, 'refunded').catch((err) => {
+        console.error('转账自动退还失败:', err);
+      });
+      return;
+    }
+    if (random < acceptChance + refundChance) {
+      useChatStore.getState().updateTransferStatus(transferMessage.id, 'received').catch((err) => {
+        console.error('转账自动收款失败:', err);
+      });
+    }
+  }, delay);
 }
 
 // 按 Agent 计划调度状态流转与回复
@@ -598,7 +648,7 @@ export const useChatStore = create<ChatState>((set) => ({
       };
     });
 
-    // 非文本消息只做状态流转，不触发 Agent 回复
+    // 非文本消息：群聊仅走状态流；单聊也生成 Agent 回复计划（当前 engine 对非文本返回空计划，规则由 Task 7 补充）
     const conversation = await db.conversations.get(conversationId);
     if (!conversation) return;
 
@@ -607,15 +657,36 @@ export const useChatStore = create<ChatState>((set) => ({
       if (conversation.type === 'group') {
         scheduleGroupDelivery(message);
       } else {
-        scheduleStatusFlow(message, {
-          conversationId,
-          contactId: conversation.contactId ?? '',
-          readUserMessageIds: [message.id],
-          readDelayMs: 1200 * timeScale,
-          typingDurationMs: 0,
-          replyDelayMs: 600 * timeScale,
-          replyMessages: [],
-        });
+        try {
+          const [contact, me] = await Promise.all([
+            conversation.contactId ? db.contacts.get(conversation.contactId) : Promise.resolve(undefined),
+            db.me.get('me'),
+          ]);
+          if (!contact) return;
+
+          const recentMessages = useChatStore.getState().messages[conversationId] || [];
+          const plan = generateReply({
+            contact,
+            userMessage: message,
+            recentMessages,
+            conversation,
+            options: {
+              timeScale,
+              sessionUsedResponses,
+              sessionRuleUsage,
+              userNickname: me?.nickname,
+            },
+          });
+          scheduleStatusFlow(message, plan);
+
+          // 转账消息额外触发 Agent 自动收款/退还
+          if (payload.type === 'transfer') {
+            scheduleTransferAgentAction(message, contact);
+          }
+        } catch (error) {
+          console.error('Agent 回复调度失败:', error);
+          await useChatStore.getState().updateMessageStatus(message.id, 'failed');
+        }
       }
       return;
     }
