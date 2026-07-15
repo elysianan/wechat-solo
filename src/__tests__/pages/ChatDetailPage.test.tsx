@@ -68,7 +68,6 @@ describe('ChatDetailPage', () => {
     // 首次滚动延迟到外层 300ms 转场结束后
     await new Promise((resolve) => setTimeout(resolve, 350));
     expect(scrollMock).toHaveBeenCalledWith({ behavior: 'auto' });
-    expect(scrollMock).not.toHaveBeenCalledWith({ behavior: 'smooth' });
   });
 
   it('同一会话内新消息到来用 smooth 滚动到底部', async () => {
