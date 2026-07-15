@@ -62,15 +62,21 @@ describe('WeChatSoloDB', () => {
 
     // 用当前 WeChatSoloDB 打开，触发 v4 迁移
     const migratedDb = new (await import('../../db/database')).WeChatSoloDB();
-    migratedDb.name = dbName;
+    Object.defineProperty(migratedDb, 'name', { value: dbName });
     await migratedDb.open();
 
     const transfer = await migratedDb.messages.get('old-transfer');
     const location = await migratedDb.messages.get('old-location');
 
-    expect(transfer?.transferStatus).toBe('pending');
-    expect(typeof transfer?.transferCreatedAt).toBe('number');
-    expect(location?.name).toBe('某个地址');
+    expect(transfer?.type).toBe('transfer');
+    if (transfer?.type === 'transfer') {
+      expect(transfer.transferStatus).toBe('pending');
+      expect(typeof transfer.transferCreatedAt).toBe('number');
+    }
+    expect(location?.type).toBe('location');
+    if (location?.type === 'location') {
+      expect(location.name).toBe('某个地址');
+    }
 
     await migratedDb.delete();
   });
