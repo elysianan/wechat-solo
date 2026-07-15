@@ -201,34 +201,33 @@ describe('TransferDetailPage', () => {
     expect(screen.getByText('已退还 格式化时间-1234567890000')).toBeInTheDocument();
   });
 
-  it('我发送的待收款转账显示待对方收款且没有操作按钮', () => {
+  it('转账不存在时显示占位提示并展示返回按钮', () => {
+    const popPage = vi.fn();
     mockAppStore({
-      pageStack: [{ type: 'transfer-detail', messageId: 'm1' }],
-      popPage: vi.fn(),
+      pageStack: [{ type: 'transfer-detail', messageId: 'missing-id' }],
+      popPage,
     });
     mockChatStore({
       messages: {
         c1: [{
           id: 'm1',
           conversationId: 'c1',
-          senderId: 'me',
+          senderId: 'u1',
           type: 'transfer',
           amount: 88,
           transferStatus: 'pending',
-          note: '吃饭',
           createdAt: Date.now(),
         }],
       },
       conversations: [{ id: 'c1', contactId: 'u1' }],
       updateTransferStatus: vi.fn(),
     });
-    mockContactStore({
-      contacts: [{ id: 'u1', name: '王小明', avatar: '/avatar.svg' }],
-    });
+    mockContactStore({ contacts: [] });
 
     render(<TransferDetailPage />);
-    expect(screen.getByText('待对方收款')).toBeInTheDocument();
-    expect(screen.queryByText('收款')).not.toBeInTheDocument();
-    expect(screen.queryByText('退还')).not.toBeInTheDocument();
+    expect(screen.getByText('转账信息不存在')).toBeInTheDocument();
+
+    fireEvent.click(screen.getByTestId('header-back'));
+    expect(popPage).toHaveBeenCalled();
   });
 });

@@ -485,10 +485,12 @@ export const useChatStore = create<ChatState>((set) => ({
   updateTransferStatus: async (messageId, status) => {
     const now = Date.now();
     try {
-      await db.messages.update(messageId, {
-        transferStatus: status,
-        transferCompletedAt: now,
-      } as Partial<Message>);
+      // 使用 modify 回调在类型收窄后更新字段，避免 unsafe cast
+      await db.messages.where('id').equals(messageId).modify((message) => {
+        if (message.type !== 'transfer') return;
+        message.transferStatus = status;
+        message.transferCompletedAt = now;
+      });
     } catch (error) {
       console.error('转账状态更新失败:', error);
       return;

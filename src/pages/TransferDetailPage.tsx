@@ -22,7 +22,16 @@ export function TransferDetailPage() {
     () => Object.values(messages).flat().find((m) => m.id === messageId),
     [messages, messageId]
   );
-  if (!message || message.type !== 'transfer') return null;
+  if (!message || message.type !== 'transfer') {
+    return (
+      <div className="h-full bg-wechat-bg flex flex-col" data-testid="transfer-detail-page">
+        <Header title="转账详情" onBack={popPage} />
+        <div className="flex-1 flex items-center justify-center">
+          <div className="text-sm text-wechat-text-secondary">转账信息不存在</div>
+        </div>
+      </div>
+    );
+  }
 
   const conversation = conversations.find((c) => c.id === message.conversationId);
   const contact = contacts.find((c) => c.id === (conversation?.contactId ?? message.senderId));
